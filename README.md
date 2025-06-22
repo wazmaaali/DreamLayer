@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/dreamlayer-ai/dreamlayer-ai/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dreamlayer-ai/dreamlayer-ai?style=social"></a>
+  <a href="https://github.com/TheDesignFounder/DreamLayer"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dreamlayer-ai/dreamlayer-ai?style=social"></a>
   <a href="#why-star-this-repo">⭐&nbsp;Star to Get Early-Supporter Perks</a>
 </p>
 
