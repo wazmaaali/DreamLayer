@@ -5,7 +5,11 @@
 </p>
 
 <p align="center">
-  <a href="#why-star-this-repo">⭐&nbsp;Star to Get Early-Supporter Perks</a>
+  <b>⭐ Star to Get Early-Supporter Perks ⭐</b> 
+</p>
+
+<p align="center">
+  <a href="https://dreamlayer-ai.github.io/DreamLayer/">&nbsp;DreamLayer AI - Documentation</a>
 </p>
 
 ![DreamLayer-UI](https://github.com/user-attachments/assets/d2cb7e4c-0194-4413-ac03-998bbb25c903)
