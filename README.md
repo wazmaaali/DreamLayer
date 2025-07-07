@@ -125,11 +125,10 @@ All contributions code, docs, art, tutorials—are welcome!
 
 ## 📚 Documentation
 
-Full docs will ship with the first code release. Planned sections:
+Full docs will ship with the first code release.
 
-- Quick-start (1-click installer)  
-- Model management & presets  
-- FAQ for artists, devs, and researchers  
+[DreamLayer AI - Documentation](https://dreamlayer-ai.github.io/DreamLayer/)
+
 
 ---
 
