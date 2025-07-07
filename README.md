@@ -21,9 +21,42 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 * **Developers and prompt engineers** iterating on prompts and LoRAs  
 * **Researchers** benchmarking new models and samplers  
 
-> **Status:** Pre-Launch • Code-Drop Target: **July 2025**
+> **Status:** ✨ **Now live:** Open Alpha • **Beta V1 ships:** **Mid-July 2025**
 
 > ⭐ Star the repo for updates & to get early-supporter perks
+
+---
+
+## Quick Start
+
+### Installation
+
+**macOS:**
+```bash
+./install_mac_dependencies.sh
+```
+
+**Windows:**
+```bash
+install_windows_dependencies.bat
+```
+
+### Start Application
+
+**macOS:**
+```bash
+./start_dream_layer.sh
+```
+
+**Windows:**
+```bash
+start_dream_layer.bat
+```
+
+### Access
+
+- **Frontend:** http://localhost:8080
+- **ComfyUI:** http://localhost:8188
 
 ---
 
@@ -39,6 +72,30 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 
 ---
 
+## Requirements
+
+- Python 3.8+
+- Node.js 16+
+- 8GB+ RAM recommended
+
+## Closed Source Models (Optional)
+
+For external AI services (DALL-E, FLUX, Ideogram), create `dream_layer_backend/.env`:
+
+```bash
+OPENAI_API_KEY=your_openai_key_here
+BFL_API_KEY=your_bfl_key_here  
+IDEOGRAM_API_KEY=your_ideogram_key_here
+```
+
+*Dream Layer works with local models without any API keys.*
+
+---
+
+*The installation scripts will automatically install all dependencies and set up the environment.* 
+
+---
+
 ## ⭐ Why Star This Repo Now?
 
 Starring helps us trend on GitHub which brings more contributors and faster features.  
@@ -51,12 +108,6 @@ Early stargazers get perks:
 * **Discord badge**: Exclusive Founding Supporter role
 
 > ⭐ **Hit the star button right now** and join us at the ground floor ☺️
-
----
-
-## 🗺 Roadmap
-
-Coming Soon - July 2025
 
 ---
 
