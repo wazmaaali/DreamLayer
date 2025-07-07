@@ -192,3 +192,9 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# DreamLayer Resources
+Dream_Layer_Resources/
+
+# macOS
+.DS_Store
