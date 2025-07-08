@@ -1,9 +1,36 @@
 from dream_layer_backend_utils.workflow_loader import load_workflow
 from dream_layer_backend_utils.api_key_injector import inject_api_keys_into_workflow
 from dream_layer_backend_utils.update_custom_workflow import override_workflow 
-from controlnet import save_controlnet_image, create_test_controlnet_image
 import json
 import os
+
+def increment_seed_in_workflow(workflow, increment):
+    """Increment seed in workflow for batch generation - handles both ComfyUI and closed-source workflows"""
+    try:
+        # First try to find KSampler node (for ComfyUI workflows)
+        for node_id, node_data in workflow.get('prompt', {}).items():
+            if node_data.get('class_type') == 'KSampler':
+                current_seed = node_data.get('inputs', {}).get('seed', 0)
+                node_data['inputs']['seed'] = current_seed + increment
+                print(f"🎲 Incremented KSampler seed: {current_seed} -> {current_seed + increment}")
+                return workflow
+        
+        # If no KSampler found, try closed-source model nodes (DALL-E, BFL, Ideogram)
+        closed_source_nodes = ['OpenAIDalle3', 'OpenAIDalle2', 'FluxProImageNode', 'FluxProUltraImageNode', 'FluxDevImageNode', 'IdeogramV3']
+        for node_id, node_data in workflow.get('prompt', {}).items():
+            if node_data.get('class_type') in closed_source_nodes:
+                current_seed = node_data.get('inputs', {}).get('seed', 0)
+                new_seed = current_seed + increment
+                node_data['inputs']['seed'] = new_seed
+                print(f"🎲 Incremented {node_data.get('class_type')} seed: {current_seed} -> {new_seed}")
+                return workflow
+        
+        print("⚠️ No seed node found to increment")
+        
+    except Exception as e:
+        print(f"Error incrementing seed: {e}")
+    return workflow
+
 
 def transform_to_txt2img_workflow(data):
     """
