@@ -42,7 +42,7 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 
 **Windows:**
 ```bash
-install_windows_dependencies.bat
+install_windows_dependencies.ps1
 ```
 
 ### Start Application
