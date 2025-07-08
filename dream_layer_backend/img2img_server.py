@@ -18,6 +18,8 @@ from dream_layer_backend_utils.update_custom_workflow import update_custom_workf
 from dream_layer_backend_utils.api_key_injector import inject_api_keys_into_workflow
 from dream_layer_backend_utils.workflow_loader import load_workflow, analyze_workflow
 from shared_utils import wait_for_image, send_to_comfyui, serve_image
+from dream_layer_backend_utils.controlnet_processor import process_controlnet_images, inject_controlnet_into_workflow, validate_controlnet_config
+
 
 # Configure logging
 logging.basicConfig(
@@ -97,12 +99,27 @@ def transform_to_img2img_workflow(data):
     logger.info("Raw data received in transform_to_img2img_workflow:")
     logger.info(json.dumps({
         **data,
-        'input_image': 'BASE64_IMAGE_DATA' if 'input_image' in data else None
+        'input_image': 'BASE64_IMAGE_DATA' if 'input_image' in data else None,
+        'controlnet': 'CONTROLNET_DATA' if 'controlnet' in data else None
     }, indent=2))
-
     # Get output directory using the shared function
     output_dir, _ = get_directories()
     logger.info(f"\nUsing output directory: {output_dir}")
+
+        # Process ControlNet data if present
+    controlnet_data = data.get('controlnet')
+    if controlnet_data and validate_controlnet_config(controlnet_data):
+        logger.info("Processing ControlNet configuration...")
+        try:
+            controlnet_data = process_controlnet_images(controlnet_data, COMFY_INPUT_DIR)
+            logger.info("ControlNet images processed successfully")
+        except Exception as e:
+            logger.error(f"Error processing ControlNet images: {str(e)}")
+            controlnet_data = None
+    else:
+        if controlnet_data:
+            logger.warning("Invalid ControlNet configuration, ignoring ControlNet")
+        controlnet_data = None
     
     # Extract parameters with validation and type conversion
     prompt = data.get('prompt', '')
@@ -275,6 +292,15 @@ def transform_to_img2img_workflow(data):
     # Log the generated workflow
     logger.info("Generated workflow:")
     logger.info(json.dumps(workflow, indent=2))
+
+        # Inject ControlNet into the workflow if present
+    if controlnet_data:
+        logger.info("Injecting ControlNet into workflow...")
+        try:
+            workflow = inject_controlnet_into_workflow(workflow, controlnet_data, COMFY_INPUT_DIR)
+            logger.info("ControlNet successfully injected into workflow")
+        except Exception as e:
+            logger.error(f"Error injecting ControlNet into workflow: {str(e)}")
     
     # Inject API keys from environment variables into the workflow
     workflow = inject_api_keys_into_workflow(workflow)
