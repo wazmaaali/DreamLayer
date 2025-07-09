@@ -25,18 +25,18 @@ const OutputQuantity: React.FC<OutputQuantityProps> = ({
   };
 
   const getBatchSizeLabel = () => {
-    return `b) Batch Size | <span style='color: #64748B;'>Optimal Level: 4–7</span>`;
+    return `a) Batch Size | <span style='color: #64748B;'>Optimal Level: 4–7</span>`;
   };
 
   return (
     <div className="space-y-4">
-      <Slider
+      <div className="hidden"><Slider
         min={1}
         max={25}
         defaultValue={25}
         label={getBatchCountLabel()}
         onChange={handleBatchCountChange}
-      />
+      /></div>
       
       <Slider
         min={1}
