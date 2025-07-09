@@ -236,7 +236,7 @@ const AdvancedSettings = ({
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="prompt-tester" className="border border-border rounded-md overflow-hidden">
+        <AccordionItem value="prompt-tester" className="border border-border rounded-md overflow-hidden hidden">
           <div className="flex items-center py-3 px-3">
             <div className="flex items-center flex-1">
               <Checkbox id="prompt-tester" className="mr-3" />
@@ -252,7 +252,7 @@ const AdvancedSettings = ({
           </AccordionContent>
         </AccordionItem>
         
-        <AccordionItem value="sdxl-style" className="border border-border rounded-md overflow-hidden">
+        <AccordionItem value="sdxl-style" className="border border-border rounded-md overflow-hidden hidden">
           <div className="flex items-center py-3 px-3">
             <div className="flex items-center flex-1">
               <Checkbox id="sdxl" className="mr-3" />

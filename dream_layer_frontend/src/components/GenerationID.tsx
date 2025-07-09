@@ -52,7 +52,7 @@ const GenerationID: React.FC<GenerationIDProps> = ({
         onOpenChange={setIsAdvancedOpen}
         className="rounded-md"
       >
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-accent rounded-md text-left mb-2">
+        <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-accent rounded-md text-left mb-2 hidden">
           <div className="flex items-center gap-2">
             <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedOpen ? "transform rotate-180" : ""}`} />
             <span className="font-medium text-xs">Advanced Seed Features</span>
