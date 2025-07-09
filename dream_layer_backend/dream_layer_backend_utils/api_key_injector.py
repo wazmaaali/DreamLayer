@@ -54,8 +54,15 @@ def read_api_keys_from_env() -> Dict[str, str]:
         Dict containing environment variable names mapped to their values.
         Example: {"BFL_API_KEY": "sk-bfl-...", "OPENAI_API_KEY": "sk-openai-..."}
     """
-    # Load environment variables from .env file in project root
-    load_dotenv()
+    # Get the path to the project's root directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    
+    # Construct the path to the .env file in the root directory
+    dotenv_path = os.path.join(project_root, '.env')
+    
+    # Load environment variables from the .env file in the project root
+    load_dotenv(dotenv_path=dotenv_path)
     
     api_keys = {}
     
