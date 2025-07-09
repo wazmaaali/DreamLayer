@@ -18,42 +18,12 @@ CORS(app, resources={
     }
 })
 
-COMFY_API_URL = "http://127.0.0.1:8188"
-
-# Sampler name mapping from frontend to ComfyUI
-SAMPLER_NAME_MAP = {
-    'Euler': 'euler',
-    'Euler a': 'euler_ancestral',
-    'LMS': 'lms',
-    'Heun': 'heun',
-    'DPM2': 'dpm_2',
-    'DPM2 a': 'dpm_2_ancestral',
-    'DPM++ 2S a': 'dpmpp_2s_ancestral',
-    'DPM++ 2M': 'dpmpp_2m',
-    'DPM++ SDE': 'dpmpp_sde',
-    'DPM fast': 'dpm_fast',
-    'DPM adaptive': 'dpm_adaptive',
-    'LMS Karras': 'lms',
-    'DPM2 Karras': 'dpm_2',
-    'DPM2 a Karras': 'dpm_2_ancestral',
-    'DPM++ 2S a Karras': 'dpmpp_2s_ancestral',
-    'DPM++ 2M Karras': 'dpmpp_2m',
-    'DPM++ SDE Karras': 'dpmpp_sde',
-    'DDIM': 'ddim',
-    'PLMS': 'plms'
-}
-
 # Get served images directory
 output_dir, _ = get_directories()
 SERVED_IMAGES_DIR = os.path.join(os.path.dirname(__file__), 'served_images')
 os.makedirs(SERVED_IMAGES_DIR, exist_ok=True)
 
 
-
-
-
-
-# Using shared functions from shared_utils.py
 
 @app.route('/api/txt2img', methods=['POST', 'OPTIONS'])
 def handle_txt2img():

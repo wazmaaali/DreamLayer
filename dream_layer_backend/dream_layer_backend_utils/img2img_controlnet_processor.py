@@ -160,7 +160,7 @@ def inject_controlnet_into_workflow(workflow: Dict[str, Any], controlnet_data: D
     workflow['prompt'][controlnet_loader_id] = {
         "class_type": "ControlNetLoader",
         "inputs": {
-            "control_net_name": unit.get('model', 'control_v11p_sd15_openpose [cab727d4]')
+            "control_net_name": unit.get('model', 'diffusion_pytorch_model.safetensors')
         }
     }
     

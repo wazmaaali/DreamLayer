@@ -1,13 +1,14 @@
 import json
 import random
 import os
-
+import json
 from dream_layer_backend_utils.workflow_loader import load_workflow
 from dream_layer_backend_utils.api_key_injector import inject_api_keys_into_workflow
 from dream_layer_backend_utils.update_custom_workflow import override_workflow 
 from dream_layer_backend_utils.update_custom_workflow import update_custom_workflow, validate_custom_workflow
-from txt2img_server import SAMPLER_NAME_MAP
+from shared_utils import SAMPLER_NAME_MAP
 from controlnet import save_controlnet_image
+
 
 def increment_seed_in_workflow(workflow, increment):
     """Increment seed in workflow for batch generation - handles both ComfyUI and closed-source workflows"""

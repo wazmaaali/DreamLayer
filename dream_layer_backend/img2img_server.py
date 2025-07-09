@@ -9,6 +9,8 @@ import io
 import time
 from shared_utils import send_to_comfyui
 from img2img_workflow import transform_to_img2img_workflow
+from shared_utils import COMFY_API_URL
+from dream_layer_backend_utils.fetch_advanced_models import get_controlnet_models
 
 # Configure logging
 logging.basicConfig(
@@ -27,7 +29,6 @@ CORS(app, resources={
     }
 })
 
-COMFY_API_URL = "http://127.0.0.1:8188"
 
 # Get the absolute path to the ComfyUI root directory (parent of our backend directory)
 COMFY_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
