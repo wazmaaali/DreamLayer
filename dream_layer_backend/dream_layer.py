@@ -78,6 +78,11 @@ sys.argv.extend(['--output-directory', output_dir])
 if models_dir:
     sys.argv.extend(['--base-directory', models_dir])
 
+# Check for environment variable to force ComfyUI CPU mode
+if os.environ.get('DREAMLAYER_COMFYUI_CPU_MODE', 'false').lower() == 'true':
+    print("Forcing ComfyUI to run in CPU mode as requested.")
+    sys.argv.append('--cpu')
+
 # Only add ComfyUI to path if it exists and we need to start the server
 def import_comfyui_main():
     """Import ComfyUI main module only when needed"""

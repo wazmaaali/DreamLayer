@@ -106,77 +106,41 @@ function Get-WindowsVersion {
     }
 }
 
-# Function to detect and install package manager
-function Install-PackageManager {
-    param([string]$Preferred = "auto")
-    
+# Function to check for long path support
+function Check-LongPathSupport {
+    Write-Step "Checking for long path support..."
+    $longPathEnabled = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -ErrorAction SilentlyContinue
+    if ($longPathEnabled -and $longPathEnabled.LongPathsEnabled -eq 1) {
+        Write-Success "Long path support is enabled."
+    } else {
+        Write-Warning "Long path support is not enabled. This can cause issues with long file paths."
+        Write-Warning "To enable it, run the following command in an elevated PowerShell prompt:"
+        Write-Warning 'Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1'
+    }
+}
+
+# Function to detect package manager
+function Get-PackageManager {
     Write-Step "Detecting package manager..."
     
-    # Check for Winget (Windows 10 1809+ / Windows 11)
     if (Test-Command "winget") {
         Write-Success "Winget detected and available"
         return "winget"
     }
     
-    # Check for Chocolatey
     if (Test-Command "choco") {
         Write-Success "Chocolatey detected and available"
         return "chocolatey"
     }
     
-    # Check for Scoop
     if (Test-Command "scoop") {
         Write-Success "Scoop detected and available"
         return "scoop"
     }
     
-    Write-Warning "No package manager detected. Installing Winget..."
-    
-    # Try to install Winget
-    try {
-        $wingetInstaller = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-        $tempFile = "$env:TEMP\winget-installer.msixbundle"
-        
-        Write-Status "Downloading Winget installer..."
-        Invoke-WebRequest -Uri $wingetInstaller -OutFile $tempFile -UseBasicParsing
-        
-        Write-Status "Installing Winget..."
-        Add-AppxPackage -Path $tempFile -ErrorAction Stop
-        
-        Remove-Item $tempFile -ErrorAction SilentlyContinue
-        
-        # Refresh PATH
-        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
-        
-        if (Test-Command "winget") {
-            Write-Success "Winget installed successfully"
-            return "winget"
-        }
-    }
-    catch {
-        Write-Warning "Failed to install Winget: $($_.Exception.Message)"
-    }
-    
-    # Fallback to Chocolatey
-    Write-Status "Installing Chocolatey as fallback..."
-    try {
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        
-        # Refresh PATH
-        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
-        
-        if (Test-Command "choco") {
-            Write-Success "Chocolatey installed successfully"
-            return "chocolatey"
-        }
-    }
-    catch {
-        Write-Error-Custom "Failed to install Chocolatey: $($_.Exception.Message)"
-    }
-    
-    Write-Error-Custom "Could not install any package manager"
+    Write-Warning "No package manager detected."
+    Write-Warning "Please install a package manager like Winget, Chocolatey, or Scoop."
+    Write-Warning "Winget is recommended for modern Windows versions."
     return "none"
 }
 
@@ -383,14 +347,46 @@ function Install-PythonDependencies {
         Write-Warning "ComfyUI\requirements.txt not found"
     }
     
-    # Install additional ML/AI dependencies
-    Write-Step "Installing additional ML/AI dependencies..."
+    # Install PyTorch with automatic GPU detection
+    Write-Step "Installing PyTorch..."
+    
+    # Check for NVIDIA GPU and drivers
+    $hasNvidiaGPU = $false
     try {
-        python -m pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-        Write-Success "PyTorch dependencies installed"
+        $nvidiaSmiResult = nvidia-smi
+        if ($nvidiaSmiResult) {
+            $hasNvidiaGPU = $true
+        }
     }
     catch {
-        Write-Warning "Could not install PyTorch dependencies: $($_.Exception.Message)"
+        # nvidia-smi not found or failed to run
+    }
+
+    if ($hasNvidiaGPU) {
+        Write-Status "NVIDIA GPU detected. Installing PyTorch with CUDA support..."
+        Write-Status "This will enable GPU acceleration for faster AI processing."
+        try {
+            python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+            Write-Success "PyTorch with CUDA support installed successfully."
+        }
+        catch {
+            Write-Error-Custom "Failed to install PyTorch with CUDA support."
+            Write-Error-Custom "Please ensure you have the latest NVIDIA drivers installed."
+            Write-Error-Custom "You can also try installing it manually by running the following command:"
+            Write-Error-Custom "python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118"
+            return $false
+        }
+    }
+    else {
+        Write-Status "No NVIDIA GPU detected. Installing the CPU version of PyTorch."
+        try {
+            python -m pip install torch torchvision torchaudio
+            Write-Success "PyTorch (CPU version) installed successfully."
+        }
+        catch {
+            Write-Error-Custom "Failed to install PyTorch (CPU version): $($_.Exception.Message)"
+            return $false
+        }
     }
     
     return $true
@@ -529,10 +525,6 @@ function Show-FinalInstructions {
     Write-Host "Start the application:" -ForegroundColor $Colors.Yellow
     Write-Host "   • Run: " -NoNewline
     Write-Host "start_dream_layer.bat" -ForegroundColor $Colors.Blue -NoNewline
-    Write-Host " (when available)"
-    Write-Host "   • Or manually: " -NoNewline
-    Write-Host ".\start_dream_layer.sh" -ForegroundColor $Colors.Blue -NoNewline
-    Write-Host " (requires Git Bash/WSL)"
     Write-Host ""
     
     Write-Host "3. " -ForegroundColor $Colors.Yellow -NoNewline
@@ -583,7 +575,7 @@ function Start-Installation {
     # Check if running in correct directory
     if (-not (Test-Path "dream_layer_backend")) {
         Write-Error-Custom "This script must be run from the Dream Layer project root directory!"
-        Write-Error-Custom "Please navigate to the dream_layer_v1 folder and try again."
+        Write-Error-Custom "Please navigate to the DreamLayer folder and try again."
         exit 1
     }
     
@@ -602,18 +594,14 @@ function Start-Installation {
         if (-not (Get-WindowsVersion)) {
             exit 1
         }
+
+        # Check for long path support
+        Check-LongPathSupport
         
-        # Install package manager
-        if (-not $SkipPackageManager) {
-            Write-Header "PACKAGE MANAGER SETUP"
-            $packageManager = Install-PackageManager $PackageManager
-            if ($packageManager -eq "none") {
-                Write-Error-Custom "Could not set up package manager"
-                exit 1
-            }
-        }
-        else {
-            $packageManager = "none"
+        # Get package manager
+        $packageManager = Get-PackageManager
+        if ($packageManager -eq "none") {
+            exit 1
         }
         
         # Install Python
