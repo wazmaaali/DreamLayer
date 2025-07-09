@@ -82,19 +82,43 @@ start_dream_layer.bat
 - Node.js 16+
 - 8GB+ RAM recommended
 
-## Closed Source Models (Optional)
+## Installing Models ⭐️
 
-For external AI services (DALL-E, FLUX, Ideogram), create `dream_layer_backend/.env`:
+DreamLayer ships without weights to keep the download small. You have two ways to add models:
+
+### a) Closed-source API models
+
+DreamLayer can also call external APIs (OpenAI DALL·E, Flux, Ideogram). 
+
+To enable them:
+
+Edit your `.env` file at `dream_layer/.env`:
 
 ```bash
-OPENAI_API_KEY=your_openai_key_here
-BFL_API_KEY=your_bfl_key_here  
-IDEOGRAM_API_KEY=your_ideogram_key_here
+OPENAI_API_KEY=sk-...
+BFL_API_KEY=flux-...
+IDEOGRAM_API_KEY=id-...
 ```
 
-*Dream Layer works with local models without any API keys.*
+Once a key is present, the model becomes visible in the dropdown.
+No key = feature stays hidden.
 
----
+### b) Open-source checkpoints (offline)
+
+**Step 1:** Download .safetensors or .ckpt files from:
+- Hugging Face
+- Civitai
+- Your own training runs
+
+**Step 2:** Place the models in the appropriate folders (auto-created on first run):
+- Checkpoints/ → # full checkpoints (.safetensors)
+- Lora/ → # LoRA & LoCon files
+- ControlNet/ → # ControlNet models
+- VAE/ → # optional VAEs
+
+**Step 3:** Click Settings ▸ Refresh Model List in the UI — the models appear in dropdowns.
+
+> Tip: Use symbolic links if your checkpoints live on another drive.
 
 *The installation scripts will automatically install all dependencies and set up the environment.* 
 
