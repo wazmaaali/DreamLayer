@@ -120,7 +120,7 @@ def send_to_comfyui(workflow: Dict[str, Any]) -> Dict[str, Any]:
         for i in range(iterations):
             # Increment seed for variation
             import copy
-            from txt2img_server import increment_seed_in_workflow
+            from txt2img_workflow import increment_seed_in_workflow
             current_workflow = increment_seed_in_workflow(copy.deepcopy(workflow), i) if i > 0 else workflow
             
             # Send to ComfyUI
