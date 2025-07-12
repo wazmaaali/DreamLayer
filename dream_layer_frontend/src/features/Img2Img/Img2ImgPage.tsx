@@ -298,7 +298,7 @@ const Img2ImgPage: React.FC<Img2ImgPageProps> = ({ selectedModel, onTabChange })
               onChange={(value) => handlePromptChange(value, true)}
             />
             
-            <h4 className="mb-2 mt-6 text-sm font-bold text-[#2563EB]">2. Sampling Settings</h4>
+            {/* <h4 className="mb-2 mt-6 text-sm font-bold text-[#2563EB]">2. Sampling Settings</h4> */}
             <RenderSettings 
               sampler={coreSettings.sampler_name}
               scheduler={coreSettings.scheduler}
