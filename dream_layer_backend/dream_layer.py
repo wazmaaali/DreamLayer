@@ -82,6 +82,10 @@ if os.environ.get('DREAMLAYER_COMFYUI_CPU_MODE', 'false').lower() == 'true':
     print("Forcing ComfyUI to run in CPU mode as requested.")
     sys.argv.append('--cpu')
 
+# Add specific CORS origin for WebSocket connections from frontend
+print("Allowing WebSocket connections from frontend (localhost:8080)...")
+sys.argv.extend(['--enable-cors-header', 'http://localhost:8080'])
+
 # Only add ComfyUI to path if it exists and we need to start the server
 def import_comfyui_main():
     """Import ComfyUI main module only when needed"""
