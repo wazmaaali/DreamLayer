@@ -134,6 +134,12 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
 
       const contextualMessage = getContextualSuccessMessage(uploadedModel.modelType);
       toast.success(contextualMessage);
+
+      // Auto-dismiss success state after 5 seconds
+      setTimeout(() => {
+        setUploadedFile(null);
+        setUploadProgress(0);
+      }, 5000);
       
     } catch (error) {
       console.error('Upload failed:', error);
@@ -237,21 +243,20 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
         </Select>
       </div>
 
-      {/* Upload Area */}
-      {uploadedFile ? (
-        // Success State
-        <div className="p-6 border-2 border-green-200 dark:border-green-800 rounded-lg bg-green-50 dark:bg-green-950/20">
+      {/* Success Message (if uploaded file exists) */}
+      {uploadedFile && (
+        <div className="mb-4 p-4 border-2 border-green-200 dark:border-green-800 rounded-lg bg-green-50 dark:bg-green-950/20">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
-              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400 mt-0.5" />
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
               <div className="flex-1">
-                <h4 className="font-medium text-green-900 dark:text-green-100">
+                <h4 className="font-medium text-green-900 dark:text-green-100 text-sm">
                   Upload Successful
                 </h4>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
                   {uploadedFile.originalFilename}
                 </p>
-                <div className="flex items-center space-x-4 mt-2">
+                <div className="flex items-center space-x-3 mt-2">
                   <Badge variant="secondary" className="text-xs">
                     {uploadedFile.modelType}
                   </Badge>
@@ -271,9 +276,10 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
             </Button>
           </div>
         </div>
-      ) : (
-        // Upload State
-        <div 
+      )}
+
+      {/* Upload Area - Always Visible */}
+      <div
           className={`
             relative p-8 border-2 border-dashed rounded-lg text-center transition-all duration-200
             ${dragActive 
@@ -328,7 +334,6 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
             disabled={isUploading}
           />
         </div>
-      )}
     </div>
   );
 };
