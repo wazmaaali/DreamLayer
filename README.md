@@ -154,6 +154,7 @@ All contributions code, docs, art, tutorials—are welcome!
 ### Contributing
 
 - Create a PR and follow the evidence requirements in the template.
+- See [CHANGELOG Guidelines](docs/CHANGELOG_GUIDELINES.md) for detailed contribution process.
 
 ---
 
