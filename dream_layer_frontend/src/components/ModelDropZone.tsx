@@ -50,8 +50,9 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
   ] as const;
 
   const validateFile = (file: File): string | null => {
-    // Check file extension
-    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    // Check file extension using regex to handle hidden files and multiple dots
+    const match = file.name.match(/(\.[^.]+)$/);
+    const fileExtension = match ? match[1].toLowerCase() : '';
     if (!acceptedTypes.includes(fileExtension)) {
       return `Invalid file type. Only ${acceptedTypes.join(', ')} files are supported.`;
     }

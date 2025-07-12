@@ -4,7 +4,6 @@ import threading
 import time
 import platform
 from typing import Optional, Tuple
-from pathlib import Path
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
@@ -481,12 +480,12 @@ def upload_model():
         result = upload_model_file(file, model_type)
 
         # Handle tuple response (result, status_code)
-        if isinstance(result, tuple):
-            response_data, status_code = result
-            return jsonify(response_data), status_code
-        else:
+        if not isinstance(result, tuple):
             # Success case
             return jsonify(result)
+
+        response_data, status_code = result
+        return jsonify(response_data), status_code
 
     except Exception as e:
         print(f"❌ Error in model upload endpoint: {str(e)}")

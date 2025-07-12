@@ -318,7 +318,7 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
         if file_ext not in allowed_extensions:
             return {
                 "status": "error",
-                "message": f"Invalid file type. Only .safetensors files are supported"
+                "message": "Invalid file type. Only .safetensors files are supported"
             }, 400
 
         print(f"📁 Uploading model: {file.filename}")
@@ -442,14 +442,12 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
         }, 500
 
 
-def emit_model_refresh(model_type: str, filename: str) -> None:
+def _setup_comfyui_websocket():
     """
-    Emit WebSocket event to notify clients that a new model has been uploaded
-    Uses ComfyUI's PromptServer WebSocket infrastructure
+    Setup ComfyUI WebSocket connection and return PromptServer instance
 
-    Args:
-        model_type: Type of model (checkpoints, loras, etc.)
-        filename: Name of the uploaded file
+    Returns:
+        PromptServer instance if available, None otherwise
     """
     try:
         # Import ComfyUI server here to avoid circular imports
@@ -469,6 +467,27 @@ def emit_model_refresh(model_type: str, filename: str) -> None:
 
         # Check if PromptServer instance exists
         if hasattr(PromptServer, 'instance') and PromptServer.instance is not None:
+            return PromptServer.instance
+
+        return None
+    except Exception as e:
+        print(f"⚠️ Warning: Failed to setup ComfyUI WebSocket: {e}")
+        return None
+
+
+def emit_model_refresh(model_type: str, filename: str) -> None:
+    """
+    Emit WebSocket event to notify clients that a new model has been uploaded
+    Uses ComfyUI's PromptServer WebSocket infrastructure
+
+    Args:
+        model_type: Type of model (checkpoints, loras, etc.)
+        filename: Name of the uploaded file
+    """
+    try:
+        prompt_server = _setup_comfyui_websocket()
+
+        if prompt_server is not None:
             # Create the WebSocket event data
             event_data = {
                 "model_type": model_type,
@@ -477,16 +496,16 @@ def emit_model_refresh(model_type: str, filename: str) -> None:
                 "timestamp": int(time.time() * 1000)
             }
 
-            print(f"📡 Emitting WebSocket event: models-refresh")
+            print("📡 Emitting WebSocket event: models-refresh")
             print(f"📊 Event data: {event_data}")
 
             # Emit the event using ComfyUI's WebSocket infrastructure
-            PromptServer.instance.send_sync("models-refresh", event_data)
+            prompt_server.send_sync("models-refresh", event_data)
 
-            print(f"✅ WebSocket event sent successfully")
+            print("✅ WebSocket event sent successfully")
 
         else:
-            print(f"⚠️ Warning: PromptServer instance not available for WebSocket emission")
+            print("⚠️ Warning: PromptServer instance not available for WebSocket emission")
 
     except ImportError as e:
         print(f"⚠️ Warning: Could not import ComfyUI server for WebSocket: {e}")

@@ -75,12 +75,12 @@ const ModelManagerPage = () => {
       // In a real implementation, you'd have separate endpoints for each model type
       const checkpointModels = await fetchAvailableModels();
       
-      // Transform to ModelInfo format and add mock data for demonstration
+      // Transform to ModelInfo format and add deterministic mock data for demonstration
       const modelInfos: ModelInfo[] = checkpointModels.map((model, index) => ({
         ...model,
         type: 'checkpoints' as ModelType,
-        size: Math.floor(Math.random() * 8000000000) + 1000000000, // Random size 1-8GB
-        dateAdded: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        size: Math.floor((index + 1) * 1234567890), // Deterministic size based on index
+        dateAdded: new Date(Date.now() - (index * 24 * 60 * 60 * 1000)).toISOString(), // Deterministic dates
         path: `/models/checkpoints/${model.filename}`
       }));
 
@@ -151,8 +151,7 @@ const ModelManagerPage = () => {
 
   const handleModelUploaded = (uploadedModel: UploadedModel) => {
     console.log('Model uploaded:', uploadedModel);
-    // The WebSocket listener will automatically refresh the list
-    // But we can also add the model immediately for better UX
+    // Add model optimistically, but prevent duplicates
     const newModel: ModelInfo = {
       id: uploadedModel.filename,
       name: uploadedModel.originalFilename.replace(/\.[^/.]+$/, ""), // Remove extension
@@ -162,8 +161,12 @@ const ModelManagerPage = () => {
       dateAdded: new Date().toISOString(),
       path: uploadedModel.filepath
     };
-    
-    setModels(prev => [newModel, ...prev]);
+
+    // Only add if not already present
+    setModels(prev => {
+      const exists = prev.some(m => m.filename === newModel.filename);
+      return exists ? prev : [newModel, ...prev];
+    });
   };
 
 
@@ -288,7 +291,14 @@ const ModelManagerPage = () => {
             </div>
 
             {/* Model Type Filter */}
-            <Select value={selectedModelType} onValueChange={(value: ModelType | 'all') => setSelectedModelType(value)}>
+            <Select
+              value={selectedModelType}
+              onValueChange={(value) => {
+                if (value === 'all' || modelTypes.some(t => t.value === value)) {
+                  setSelectedModelType(value as ModelType | 'all');
+                }
+              }}
+            >
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
@@ -431,10 +441,24 @@ const ModelCard: React.FC<ModelCardProps> = ({
   formatFileSize,
   formatDate
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Handle selection/activation - for now just focus the card
+      (e.currentTarget as HTMLElement).focus();
+    }
+  };
+
   if (viewMode === 'list') {
     return (
-      <Card className="p-4 hover:bg-accent/50 transition-colors">
-        <div className="flex items-center justify-between">
+      <Card className="p-4 hover:bg-accent/50 transition-colors focus:ring-2 focus:ring-primary focus:outline-none">
+        <div
+          className="flex items-center justify-between"
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          role="button"
+          aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}, Size: ${formatFileSize(model.size || 0)}`}
+        >
           <div className="flex items-center space-x-4 flex-1 min-w-0">
             <div className="flex-shrink-0">
               <HardDrive className="h-8 w-8 text-muted-foreground" />
@@ -458,7 +482,13 @@ const ModelCard: React.FC<ModelCardProps> = ({
   }
 
   return (
-    <Card className="p-4 hover:bg-accent/50 transition-colors">
+    <Card
+      className="p-4 hover:bg-accent/50 transition-colors focus:ring-2 focus:ring-primary focus:outline-none"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      role="button"
+      aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}, Size: ${formatFileSize(model.size || 0)}`}
+    >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <HardDrive className="h-8 w-8 text-muted-foreground" />
