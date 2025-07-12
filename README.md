@@ -153,7 +153,7 @@ All contributions code, docs, art, tutorials—are welcome!
 
 ### Contributing
 
-- See [CHANGELOG Guidelines](docs/CHANGELOG_GUIDELINES.md) before opening a PR.
+- Create a PR and follow the evidence requirements in the template.
 
 ---
 
