@@ -4,6 +4,7 @@ import time
 import requests
 import copy
 from typing import List, Dict, Any
+from pathlib import Path
 from dream_layer import get_directories
 from dream_layer_backend_utils.update_custom_workflow import find_save_node
 from dream_layer_backend_utils.shared_workflow_parameters import increment_seed_in_workflow
@@ -286,4 +287,148 @@ def upload_controlnet_image(file, unit_index: int = 0) -> Dict[str, Any]:
         return {
             "status": "error",
             "message": str(e)
-        }, 500 
+        }, 500
+
+
+def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
+    """
+    Upload .safetensors model files to appropriate ComfyUI model directories
+    Implements atomic write and path traversal protection
+
+    Args:
+        file: Flask file object from request.files
+        model_type: Type of model (checkpoints, loras, controlnet, upscale_models, etc.)
+
+    Returns:
+        Dict containing status, filename, and other metadata
+    """
+    try:
+        print(f"🤖 Model upload request received for type: {model_type}")
+
+        if not file or file.filename == '':
+            return {
+                "status": "error",
+                "message": "No file provided or no file selected"
+            }, 400
+
+        # Validate file extension - only .safetensors for now
+        allowed_extensions = {'.safetensors'}
+        file_ext = Path(file.filename).suffix.lower()
+
+        if file_ext not in allowed_extensions:
+            return {
+                "status": "error",
+                "message": f"Invalid file type. Only .safetensors files are supported"
+            }, 400
+
+        print(f"📁 Uploading model: {file.filename}")
+        print(f"📊 File content type: {file.content_type}")
+        print(f"🏷️ Model type: {model_type}")
+
+        # Get ComfyUI models directory structure
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        comfyui_models_dir = os.path.join(project_root, "ComfyUI", "models")
+
+        # Map model types to directories
+        model_type_dirs = {
+            "checkpoints": "checkpoints",
+            "loras": "loras",
+            "controlnet": "controlnet",
+            "upscale_models": "upscale_models",
+            "vae": "vae",
+            "embeddings": "embeddings",
+            "hypernetworks": "hypernetworks"
+        }
+
+        if model_type not in model_type_dirs:
+            return {
+                "status": "error",
+                "message": f"Invalid model type. Allowed: {', '.join(model_type_dirs.keys())}"
+            }, 400
+
+        target_dir = os.path.join(comfyui_models_dir, model_type_dirs[model_type])
+
+        # 🔒 SECURITY: Prevent path traversal attacks
+        models_base_dir = Path(comfyui_models_dir).resolve()
+        target_dir_path = Path(target_dir).resolve()
+
+        if not target_dir_path.is_relative_to(models_base_dir):
+            print(f"❌ Path traversal attempt detected: {target_dir}")
+            return {
+                "status": "error",
+                "message": "Invalid target directory"
+            }, 400
+
+        # Create target directory if it doesn't exist
+        os.makedirs(target_dir, exist_ok=True)
+        print(f"📁 Target directory: {target_dir}")
+
+        # Generate safe filename with timestamp
+        timestamp = int(time.time() * 1000)
+        safe_filename = f"{Path(file.filename).stem}_{timestamp}{file_ext}"
+        target_path = Path(target_dir) / safe_filename
+
+        # 🔒 SECURITY: Final path validation
+        final_target_path = target_path.resolve()
+        if not final_target_path.is_relative_to(models_base_dir):
+            print(f"❌ Final path traversal check failed: {final_target_path}")
+            return {
+                "status": "error",
+                "message": "Invalid file path"
+            }, 400
+
+        print(f"📄 Saving to: {target_path}")
+
+        # 🔒 ATOMIC WRITE: Write to temporary file first
+        temp_path = target_path.with_suffix(target_path.suffix + '.tmp')
+
+        try:
+            # Save to temporary file
+            file.save(str(temp_path))
+
+            # Force write to disk (fsync)
+            with open(temp_path, 'rb') as f:
+                os.fsync(f.fileno())
+
+            # Atomic rename to final destination
+            temp_path.rename(target_path)
+
+            print(f"✅ Atomic write completed: {safe_filename}")
+
+        except Exception as e:
+            # Clean up temp file if something went wrong
+            if temp_path.exists():
+                temp_path.unlink()
+            raise e
+
+        # Verify file was created successfully
+        if target_path.exists():
+            file_size = target_path.stat().st_size
+            print(f"✅ Successfully saved model: {safe_filename}")
+            print(f"📏 File size: {file_size} bytes")
+
+            return {
+                "status": "success",
+                "filename": safe_filename,
+                "original_filename": file.filename,
+                "model_type": model_type,
+                "filepath": str(target_path),
+                "size": file_size,
+                "message": f"Model uploaded successfully to {model_type}"
+            }
+        else:
+            print(f"❌ File was not created: {target_path}")
+            return {
+                "status": "error",
+                "message": "Failed to save file"
+            }, 500
+
+    except Exception as e:
+        print(f"❌ Error uploading model: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "status": "error",
+            "message": str(e)
+        }, 500

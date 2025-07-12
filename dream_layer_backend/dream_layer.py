@@ -4,6 +4,7 @@ import threading
 import time
 import platform
 from typing import Optional, Tuple
+from pathlib import Path
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
@@ -11,7 +12,6 @@ import json
 import subprocess
 from dream_layer_backend_utils.random_prompt_generator import fetch_positive_prompt, fetch_negative_prompt
 from dream_layer_backend_utils.fetch_advanced_models import get_lora_models, get_settings, is_valid_directory, get_upscaler_models, get_controlnet_models
-from dream_layer_backend_utils.random_prompt_generator import fetch_positive_prompt, fetch_negative_prompt
 # Add ComfyUI directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -444,6 +444,52 @@ def upload_controlnet_image():
             
     except Exception as e:
         print(f"❌ Error uploading ControlNet image: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/upload-model', methods=['POST'])
+def upload_model():
+    """
+    Endpoint to upload .safetensors model files to ComfyUI models directory
+    Supports: checkpoints, loras, controlnet, upscale_models, vae, embeddings, hypernetworks
+    """
+    try:
+        # Import here to avoid circular import
+        from shared_utils import upload_model_file
+
+        print("🤖 Model upload endpoint called")
+
+        # Check if file is present in request
+        if 'file' not in request.files:
+            return jsonify({
+                "status": "error",
+                "message": "No file provided in request"
+            }), 400
+
+        file = request.files['file']
+
+        # Get model type from form data (default to checkpoints)
+        model_type = request.form.get('model_type', 'checkpoints')
+
+        print(f"📁 Upload request - File: {file.filename}, Type: {model_type}")
+
+        # Call the upload function from shared_utils
+        result = upload_model_file(file, model_type)
+
+        # Handle tuple response (result, status_code)
+        if isinstance(result, tuple):
+            response_data, status_code = result
+            return jsonify(response_data), status_code
+        else:
+            # Success case
+            return jsonify(result)
+
+    except Exception as e:
+        print(f"❌ Error in model upload endpoint: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
