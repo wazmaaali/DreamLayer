@@ -408,6 +408,14 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
             print(f"✅ Successfully saved model: {safe_filename}")
             print(f"📏 File size: {file_size} bytes")
 
+            # 🔄 WEBSOCKET: Emit model refresh event
+            try:
+                emit_model_refresh(model_type, safe_filename)
+                print(f"📡 WebSocket event emitted: models-refresh for {model_type}")
+            except Exception as ws_error:
+                print(f"⚠️ Warning: Failed to emit WebSocket event: {ws_error}")
+                # Don't fail the upload if WebSocket fails
+
             return {
                 "status": "success",
                 "filename": safe_filename,
@@ -432,3 +440,58 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
             "status": "error",
             "message": str(e)
         }, 500
+
+
+def emit_model_refresh(model_type: str, filename: str) -> None:
+    """
+    Emit WebSocket event to notify clients that a new model has been uploaded
+    Uses ComfyUI's PromptServer WebSocket infrastructure
+
+    Args:
+        model_type: Type of model (checkpoints, loras, etc.)
+        filename: Name of the uploaded file
+    """
+    try:
+        # Import ComfyUI server here to avoid circular imports
+        import sys
+        import os
+
+        # Add ComfyUI to path if not already there
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        comfyui_dir = os.path.join(project_root, "ComfyUI")
+
+        if comfyui_dir not in sys.path:
+            sys.path.insert(0, comfyui_dir)
+
+        # Import PromptServer from ComfyUI
+        from server import PromptServer
+
+        # Check if PromptServer instance exists
+        if hasattr(PromptServer, 'instance') and PromptServer.instance is not None:
+            # Create the WebSocket event data
+            event_data = {
+                "model_type": model_type,
+                "filename": filename,
+                "action": "added",
+                "timestamp": int(time.time() * 1000)
+            }
+
+            print(f"📡 Emitting WebSocket event: models-refresh")
+            print(f"📊 Event data: {event_data}")
+
+            # Emit the event using ComfyUI's WebSocket infrastructure
+            PromptServer.instance.send_sync("models-refresh", event_data)
+
+            print(f"✅ WebSocket event sent successfully")
+
+        else:
+            print(f"⚠️ Warning: PromptServer instance not available for WebSocket emission")
+
+    except ImportError as e:
+        print(f"⚠️ Warning: Could not import ComfyUI server for WebSocket: {e}")
+    except Exception as e:
+        print(f"❌ Error emitting WebSocket event: {e}")
+        import traceback
+        traceback.print_exc()
+        # Don't raise - we don't want WebSocket failures to break uploads
