@@ -151,6 +151,10 @@ Early stargazers get perks:
 
 All contributions code, docs, art, tutorials—are welcome!
 
+### Contributing
+
+- See [CHANGELOG Guidelines](docs/CHANGELOG_GUIDELINES.md) before opening a PR.
+
 ---
 
 ## 📚 Documentation
