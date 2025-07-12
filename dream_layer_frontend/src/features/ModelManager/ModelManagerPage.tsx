@@ -248,16 +248,7 @@ const ModelManagerPage = () => {
             {showUploadZone ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             <span>{showUploadZone ? 'Hide' : 'Show'} Upload</span>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadModels}
-            disabled={isLoading}
-            className="flex items-center space-x-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </Button>
+
         </div>
       </div>
 
