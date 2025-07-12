@@ -11,14 +11,10 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Search, 
-  Upload, 
-  Trash2, 
-  Download, 
-  FolderOpen, 
+import {
+  Search,
+  Upload,
   RefreshCw,
-  Filter,
   Grid3X3,
   List,
   HardDrive,
@@ -163,17 +159,7 @@ const ModelManagerPage = () => {
     setModels(prev => [newModel, ...prev]);
   };
 
-  const handleDeleteModel = async (model: ModelInfo) => {
-    // TODO: Implement model deletion API
-    console.log('Delete model:', model);
-    toast.error('Model deletion not yet implemented');
-  };
 
-  const handleShowInFolder = async (model: ModelInfo) => {
-    // TODO: Implement show in folder functionality
-    console.log('Show in folder:', model);
-    toast.info('Show in folder not yet implemented');
-  };
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -368,12 +354,10 @@ const ModelManagerPage = () => {
             : "space-y-2"
           }>
             {filteredModels.map((model) => (
-              <ModelCard 
-                key={model.id} 
-                model={model} 
+              <ModelCard
+                key={model.id}
+                model={model}
                 viewMode={viewMode}
-                onDelete={handleDeleteModel}
-                onShowInFolder={handleShowInFolder}
                 getModelTypeColor={getModelTypeColor}
                 formatFileSize={formatFileSize}
                 formatDate={formatDate}
@@ -390,21 +374,17 @@ const ModelManagerPage = () => {
 interface ModelCardProps {
   model: ModelInfo;
   viewMode: 'grid' | 'list';
-  onDelete: (model: ModelInfo) => void;
-  onShowInFolder: (model: ModelInfo) => void;
   getModelTypeColor: (type: ModelType) => string;
   formatFileSize: (bytes: number) => string;
   formatDate: (dateString: string) => string;
 }
 
-const ModelCard: React.FC<ModelCardProps> = ({ 
-  model, 
-  viewMode, 
-  onDelete, 
-  onShowInFolder, 
-  getModelTypeColor, 
-  formatFileSize, 
-  formatDate 
+const ModelCard: React.FC<ModelCardProps> = ({
+  model,
+  viewMode,
+  getModelTypeColor,
+  formatFileSize,
+  formatDate
 }) => {
   if (viewMode === 'list') {
     return (
@@ -425,23 +405,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
               <span>{formatFileSize(model.size || 0)}</span>
               <span>{formatDate(model.dateAdded || '')}</span>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onShowInFolder(model)}
-            >
-              <FolderOpen className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDelete(model)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </Card>
@@ -474,25 +437,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
             <span>Added:</span>
             <span>{formatDate(model.dateAdded || '')}</span>
           </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onShowInFolder(model)}
-            className="flex-1"
-          >
-            <FolderOpen className="h-4 w-4 mr-1" />
-            Show
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDelete(model)}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </Card>
