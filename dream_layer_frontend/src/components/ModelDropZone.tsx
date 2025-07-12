@@ -38,15 +38,15 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
   const [uploadedFile, setUploadedFile] = useState<UploadedModel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Model type options with descriptions
+  // Model type options with user-friendly descriptions
   const modelTypeOptions = [
-    { value: 'checkpoints', label: 'Checkpoints', description: 'Main Stable Diffusion models' },
-    { value: 'loras', label: 'LoRAs', description: 'Low-Rank Adaptation models' },
-    { value: 'controlnet', label: 'ControlNet', description: 'ControlNet models for guided generation' },
-    { value: 'upscale_models', label: 'Upscalers', description: 'Image upscaling models' },
-    { value: 'vae', label: 'VAE', description: 'Variational Autoencoder models' },
-    { value: 'embeddings', label: 'Embeddings', description: 'Textual inversion embeddings' },
-    { value: 'hypernetworks', label: 'Hypernetworks', description: 'Hypernetwork models' }
+    { value: 'checkpoints', label: 'Base Model (Checkpoint)', description: "The 'brain' that generates images" },
+    { value: 'loras', label: 'Style Add-ons (LoRAs)', description: 'Modifies art style or subjects' },
+    { value: 'vae', label: 'Image Enhancer (VAE)', description: 'Improves colors and quality' },
+    { value: 'controlnet', label: 'Guided Generation (ControlNet)', description: 'Controls image composition' },
+    { value: 'upscale_models', label: 'Resolution Enhancer (Upscalers)', description: 'Makes images larger and sharper' },
+    { value: 'embeddings', label: 'Text Concepts (Embeddings)', description: 'Adds new words/concepts' },
+    { value: 'hypernetworks', label: 'Style Modifiers (Hypernetworks)', description: 'Advanced style control' }
   ] as const;
 
   const validateFile = (file: File): string | null => {
@@ -124,14 +124,15 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
       }, 200);
 
       const uploadedModel = await uploadFile(file);
-      
+
       clearInterval(progressInterval);
       setUploadProgress(100);
-      
+
       setUploadedFile(uploadedModel);
       onModelUploaded?.(uploadedModel);
-      
-      toast.success(`Model "${uploadedModel.originalFilename}" uploaded successfully!`);
+
+      const contextualMessage = getContextualSuccessMessage(uploadedModel.modelType);
+      toast.success(contextualMessage);
       
     } catch (error) {
       console.error('Upload failed:', error);
@@ -189,6 +190,19 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getContextualSuccessMessage = (modelType: ModelType): string => {
+    const messages = {
+      'checkpoints': 'Checkpoint uploaded! This model can now generate images.',
+      'loras': 'LoRA uploaded! Use this to modify your image style.',
+      'vae': 'VAE uploaded! This will improve your image colors and quality.',
+      'controlnet': 'ControlNet uploaded! Use this for guided image generation.',
+      'upscale_models': 'Upscaler uploaded! Use this to enhance image resolution.',
+      'embeddings': 'Embedding uploaded! This adds new concepts to your prompts.',
+      'hypernetworks': 'Hypernetwork uploaded! Use this for advanced style control.'
+    };
+    return messages[modelType] || 'Model uploaded successfully!';
   };
 
   return (
@@ -287,13 +301,13 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
                 <Upload className="h-12 w-12 text-muted-foreground" />
                 <div className="space-y-2">
                   <p className="text-lg font-medium text-foreground">
-                    Drop your model file here
+                    Drop your .safetensors model file here
                   </p>
                   <p className="text-sm text-muted-foreground">
                     or <span className="text-primary font-medium">browse files</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Supports: {acceptedTypes.join(', ')} • Max size: 8GB
+                    Supports: {acceptedTypes.join(', ')} • Max size: <span className="font-semibold">8GB</span>
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" className="mt-4">

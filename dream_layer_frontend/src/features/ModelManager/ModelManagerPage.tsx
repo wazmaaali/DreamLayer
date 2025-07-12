@@ -20,7 +20,14 @@ import {
   HardDrive,
   FileText,
   Eye,
-  EyeOff
+  EyeOff,
+  Brain,
+  Palette,
+  Rainbow,
+  Target,
+  TrendingUp,
+  FileType,
+  Settings
 } from "lucide-react";
 import ModelDropZone, { ModelType, UploadedModel } from '@/components/ModelDropZone';
 import { 
@@ -45,20 +52,20 @@ const ModelManagerPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModelType, setSelectedModelType] = useState<ModelType | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'type'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'type'>('type');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showUploadZone, setShowUploadZone] = useState(true);
 
-  // Model type options
+  // Model type options with user-friendly labels
   const modelTypes: { value: ModelType | 'all'; label: string; description: string }[] = [
     { value: 'all', label: 'All Models', description: 'Show all model types' },
-    { value: 'checkpoints', label: 'Checkpoints', description: 'Main Stable Diffusion models' },
-    { value: 'loras', label: 'LoRAs', description: 'Low-Rank Adaptation models' },
-    { value: 'controlnet', label: 'ControlNet', description: 'ControlNet models' },
-    { value: 'upscale_models', label: 'Upscalers', description: 'Image upscaling models' },
-    { value: 'vae', label: 'VAE', description: 'Variational Autoencoder models' },
-    { value: 'embeddings', label: 'Embeddings', description: 'Textual inversion embeddings' },
-    { value: 'hypernetworks', label: 'Hypernetworks', description: 'Hypernetwork models' }
+    { value: 'checkpoints', label: 'Base Model (Checkpoint)', description: "The 'brain' that generates images" },
+    { value: 'loras', label: 'Style Add-ons (LoRAs)', description: 'Modifies art style or subjects' },
+    { value: 'vae', label: 'Image Enhancer (VAE)', description: 'Improves colors and quality' },
+    { value: 'controlnet', label: 'Guided Generation (ControlNet)', description: 'Controls image composition' },
+    { value: 'upscale_models', label: 'Resolution Enhancer (Upscalers)', description: 'Makes images larger and sharper' },
+    { value: 'embeddings', label: 'Text Concepts (Embeddings)', description: 'Adds new words/concepts' },
+    { value: 'hypernetworks', label: 'Style Modifiers (Hypernetworks)', description: 'Advanced style control' }
   ];
 
   const loadModels = async () => {
@@ -118,7 +125,7 @@ const ModelManagerPage = () => {
           comparison = (a.size || 0) - (b.size || 0);
           break;
         case 'type':
-          comparison = a.type.localeCompare(b.type);
+          comparison = getModelTypePriority(a.type) - getModelTypePriority(b.type);
           break;
       }
       
@@ -184,6 +191,38 @@ const ModelManagerPage = () => {
       hypernetworks: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200'
     };
     return colors[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+  };
+
+  const getModelTypeIcon = (type: ModelType) => {
+    const iconProps = { className: "h-3 w-3" };
+    const icons = {
+      checkpoints: <Brain {...iconProps} />,
+      loras: <Palette {...iconProps} />,
+      vae: <Rainbow {...iconProps} />,
+      controlnet: <Target {...iconProps} />,
+      upscale_models: <TrendingUp {...iconProps} />,
+      embeddings: <FileType {...iconProps} />,
+      hypernetworks: <Settings {...iconProps} />
+    };
+    return icons[type] || <HardDrive {...iconProps} />;
+  };
+
+  const getModelTypePriority = (type: ModelType): number => {
+    const priorities = {
+      checkpoints: 1,
+      loras: 2,
+      vae: 3,
+      controlnet: 4,
+      upscale_models: 5,
+      embeddings: 6,
+      hypernetworks: 7
+    };
+    return priorities[type] || 8;
+  };
+
+  const getModelTypeLabel = (type: ModelType): string => {
+    const modelType = modelTypes.find(mt => mt.value === type);
+    return modelType?.label || type;
   };
 
   return (
@@ -336,8 +375,8 @@ const ModelManagerPage = () => {
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No models found</h3>
             <p className="text-muted-foreground mb-4">
-              {models.length === 0 
-                ? "Upload your first model to get started" 
+              {models.length === 0
+                ? "Upload a checkpoint model to get started with image generation"
                 : "Try adjusting your search or filters"
               }
             </p>
@@ -359,6 +398,8 @@ const ModelManagerPage = () => {
                 model={model}
                 viewMode={viewMode}
                 getModelTypeColor={getModelTypeColor}
+                getModelTypeIcon={getModelTypeIcon}
+                getModelTypeLabel={getModelTypeLabel}
                 formatFileSize={formatFileSize}
                 formatDate={formatDate}
               />
@@ -375,6 +416,8 @@ interface ModelCardProps {
   model: ModelInfo;
   viewMode: 'grid' | 'list';
   getModelTypeColor: (type: ModelType) => string;
+  getModelTypeIcon: (type: ModelType) => React.ReactNode;
+  getModelTypeLabel: (type: ModelType) => string;
   formatFileSize: (bytes: number) => string;
   formatDate: (dateString: string) => string;
 }
@@ -383,6 +426,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
   model,
   viewMode,
   getModelTypeColor,
+  getModelTypeIcon,
+  getModelTypeLabel,
   formatFileSize,
   formatDate
 }) => {
@@ -400,7 +445,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
             </div>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <Badge className={getModelTypeColor(model.type)}>
-                {model.type}
+                {getModelTypeIcon(model.type)}
+                <span className="ml-1">{getModelTypeLabel(model.type)}</span>
               </Badge>
               <span>{formatFileSize(model.size || 0)}</span>
               <span>{formatDate(model.dateAdded || '')}</span>
@@ -417,7 +463,8 @@ const ModelCard: React.FC<ModelCardProps> = ({
         <div className="flex items-start justify-between">
           <HardDrive className="h-8 w-8 text-muted-foreground" />
           <Badge className={getModelTypeColor(model.type)}>
-            {model.type}
+            {getModelTypeIcon(model.type)}
+            <span className="ml-1">{getModelTypeLabel(model.type)}</span>
           </Badge>
         </div>
         <div>
