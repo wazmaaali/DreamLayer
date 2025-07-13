@@ -59,7 +59,7 @@ const ModelManagerPage = () => {
     { value: 'loras', label: 'Style Add-ons (LoRAs)', description: 'Modifies art style or subjects' },
     { value: 'vae', label: 'Image Enhancer (VAE)', description: 'Improves colors and quality' },
     { value: 'controlnet', label: 'Guided Generation (ControlNet)', description: 'Controls image composition' },
-    { value: 'upscale_models', label: 'Resolution Enhancer (Upscalers)', description: 'Makes images larger and sharper' },
+    { value: 'upscale_models', label: 'Upscaler', description: 'Makes images larger and sharper' },
     { value: 'embeddings', label: 'Text Concepts (Embeddings)', description: 'Adds new words/concepts' },
     { value: 'hypernetworks', label: 'Style Modifiers (Hypernetworks)', description: 'Advanced style control' }
   ];
