@@ -61,8 +61,8 @@ def get_controlnet_models() -> List[str]:
         # List all files in the controlnet directory
         model_files = []
         for filename in os.listdir(controlnet_dir):
-            # Include common ControlNet model extensions
-            if filename.endswith(('.safetensors', '.ckpt', '.pt', '.pth')):
+            # Include all supported model extensions
+            if filename.endswith(('.safetensors', '.ckpt', '.pth', '.pt', '.bin')):
                 model_files.append(filename)
         
         logger.info(f"Found {len(model_files)} ControlNet models")
@@ -102,8 +102,8 @@ def get_lora_models() -> List[str]:
         # List all files in the lora directory
         model_files = []
         for filename in os.listdir(lora_dir):
-            # Include common LoRA model extensions
-            if filename.endswith(('.safetensors', '.ckpt', '.pt', '.pth')):
+            # Include all supported model extensions
+            if filename.endswith(('.safetensors', '.ckpt', '.pth', '.pt', '.bin')):
                 model_files.append(filename)
         
         logger.info(f"Found {len(model_files)} LoRA models")
@@ -143,8 +143,8 @@ def get_upscaler_models() -> List[str]:
         # List all files in the upscaler directory
         model_files = []
         for filename in os.listdir(upscaler_dir):
-            # Include common upscaler model extensions
-            if filename.endswith(('.pth', '.pt', '.ckpt')):
+            # Include all supported model extensions
+            if filename.endswith(('.safetensors', '.ckpt', '.pth', '.pt', '.bin')):
                 model_files.append(filename)
         
         logger.info(f"Found {len(model_files)} upscaler models")

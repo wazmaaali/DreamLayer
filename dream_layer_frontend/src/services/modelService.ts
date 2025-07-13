@@ -84,22 +84,36 @@ const generateClientId = (): string => {
   return 'dreamlayer_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 };
 
-// Model refresh listeners
-const modelRefreshListeners: Set<() => void> = new Set();
+// Model refresh listeners with optional model type filtering
+interface ModelRefreshListener {
+  callback: () => void;
+  modelType?: string;
+}
 
-export const addModelRefreshListener = (callback: () => void): (() => void) => {
-  modelRefreshListeners.add(callback);
+const modelRefreshListeners: Set<ModelRefreshListener> = new Set();
+
+export const addModelRefreshListener = (
+  callback: () => void,
+  modelType?: string
+): (() => void) => {
+  const listener: ModelRefreshListener = { callback, modelType };
+  modelRefreshListeners.add(listener);
 
   // Return unsubscribe function
   return () => {
-    modelRefreshListeners.delete(callback);
+    modelRefreshListeners.delete(listener);
   };
 };
 
-const notifyModelRefreshListeners = () => {
-  modelRefreshListeners.forEach(callback => {
+const notifyModelRefreshListeners = (event?: ModelRefreshEvent) => {
+  modelRefreshListeners.forEach(listener => {
     try {
-      callback();
+      // If listener has a model type filter, only notify for matching types
+      if (listener.modelType && event?.model_type && listener.modelType !== event.model_type) {
+        return; // Skip this listener
+      }
+
+      listener.callback();
     } catch (error) {
       console.error('Error in model refresh listener:', error);
     }
@@ -129,7 +143,10 @@ const connectWebSocket = (): Promise<WebSocket> => {
           // Listen for our custom "models-refresh" events
           if (message.type === 'models-refresh') {
             console.log('📡 Received model refresh event:', message.data);
-            notifyModelRefreshListeners();
+            console.log('📡 Event model_type:', message.data?.model_type);
+            console.log('📡 Event filename:', message.data?.filename);
+            console.log('📡 Event action:', message.data?.action);
+            notifyModelRefreshListeners(message.data);
           }
 
           // Also log other message types for debugging

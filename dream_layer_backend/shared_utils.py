@@ -292,7 +292,8 @@ def upload_controlnet_image(file, unit_index: int = 0) -> Dict[str, Any]:
 
 def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
     """
-    Upload .safetensors model files to appropriate ComfyUI model directories
+    Upload model files to appropriate ComfyUI model directories
+    Supports: .safetensors, .ckpt, .pth, .pt, .bin formats
     Implements atomic write and path traversal protection
 
     Args:
@@ -311,14 +312,14 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
                 "message": "No file provided or no file selected"
             }, 400
 
-        # Validate file extension - only .safetensors for now
-        allowed_extensions = {'.safetensors'}
+        # Validate file extension - support common model formats
+        allowed_extensions = {'.safetensors', '.ckpt', '.pth', '.pt', '.bin'}
         file_ext = Path(file.filename).suffix.lower()
 
         if file_ext not in allowed_extensions:
             return {
                 "status": "error",
-                "message": "Invalid file type. Only .safetensors files are supported"
+                "message": f"Invalid file type. Supported formats: {', '.join(sorted(allowed_extensions))}"
             }, 400
 
         print(f"📁 Uploading model: {file.filename}")

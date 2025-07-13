@@ -457,8 +457,9 @@ def upload_controlnet_image():
 @app.route('/api/upload-model', methods=['POST'])
 def upload_model():
     """
-    Endpoint to upload .safetensors model files to ComfyUI models directory
-    Supports: checkpoints, loras, controlnet, upscale_models, vae, embeddings, hypernetworks
+    Endpoint to upload model files to ComfyUI models directory
+    Supports formats: .safetensors, .ckpt, .pth, .pt, .bin
+    Supports types: checkpoints, loras, controlnet, upscale_models, vae, embeddings, hypernetworks
     """
     try:
         # Import here to avoid circular import

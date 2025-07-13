@@ -27,7 +27,7 @@ interface ModelDropZoneProps {
 
 const ModelDropZone: React.FC<ModelDropZoneProps> = ({
   onModelUploaded,
-  acceptedTypes = ['.safetensors'],
+  acceptedTypes = ['.safetensors', '.ckpt', '.pth', '.pt', '.bin'],
   modelType = 'checkpoints',
   className = ""
 }) => {
@@ -308,7 +308,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
                 <Upload className="h-12 w-12 text-muted-foreground" />
                 <div className="space-y-2">
                   <p className="text-lg font-medium text-foreground">
-                    Drop your .safetensors model file here
+                    Drop your model file here
                   </p>
                   <p className="text-sm text-muted-foreground">
                     or <span className="text-primary font-medium">browse files</span>

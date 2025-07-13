@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Search, Grid, List, ArrowUp, ArrowDown, RefreshCw, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LoraCard from './LoraCard';
 import { LoraModel } from '@/types/lora';
+import { useModelRefresh } from '@/hooks/useModelRefresh';
 
 const LoraBrowser = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +14,8 @@ const LoraBrowser = () => {
   const [error, setError] = useState<string | null>(null);
   const [loraModels, setLoraModels] = useState<LoraModel[]>([]);
 
-  const fetchLoraModels = async () => {
+  const fetchLoraModels = useCallback(async () => {
+    console.log('🔄 LoraBrowser: fetchLoraModels called');
     setIsLoading(true);
     setError(null);
     try {
@@ -32,6 +34,7 @@ const LoraBrowser = () => {
           tags: model.tags || [],
           defaultWeight: model.defaultWeight || 1.0
         }));
+        console.log('📊 LoraBrowser: Fetched LoRA models:', modelsWithDefaults.length, 'models');
         setLoraModels(modelsWithDefaults);
       } else {
         throw new Error(data.message || 'Failed to fetch LoRA models');
@@ -41,11 +44,10 @@ const LoraBrowser = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchLoraModels();
   }, []);
+
+  // Use WebSocket auto-refresh hook for LoRA models
+  useModelRefresh(fetchLoraModels, 'loras');
 
   const filteredModels = loraModels.filter(model => {
     const matchesSearch = model.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
