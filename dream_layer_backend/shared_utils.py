@@ -389,11 +389,15 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
 
         target_dir = os.path.join(comfyui_models_dir, model_type_dirs[model_type])
 
-        # 🔒 SECURITY: Prevent path traversal attacks
         models_base_dir = Path(comfyui_models_dir).resolve()
         target_dir_path = Path(target_dir).resolve()
 
-        if not target_dir_path.is_relative_to(models_base_dir):
+        try:
+            is_safe = target_dir_path.is_relative_to(models_base_dir)
+        except AttributeError:
+            is_safe = str(target_dir_path).startswith(str(models_base_dir))
+
+        if not is_safe:
             print(f"❌ Path traversal attempt detected: {target_dir}")
             return {
                 "status": "error",
@@ -413,9 +417,13 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
         original_display_name = Path(file.filename).stem.replace('-', ' ').replace('_', ' ')
         original_display_name = ' '.join(word.capitalize() for word in original_display_name.split())
 
-        # 🔒 SECURITY: Final path validation
         final_target_path = target_path.resolve()
-        if not final_target_path.is_relative_to(models_base_dir):
+        try:
+            is_safe = final_target_path.is_relative_to(models_base_dir)
+        except AttributeError:
+            is_safe = str(final_target_path).startswith(str(models_base_dir))
+
+        if not is_safe:
             print(f"❌ Final path traversal check failed: {final_target_path}")
             return {
                 "status": "error",
@@ -428,11 +436,10 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
         temp_path = target_path.with_suffix(target_path.suffix + '.tmp')
 
         try:
-            # Save to temporary file
             file.save(str(temp_path))
 
-            # Force write to disk (fsync)
-            with open(temp_path, 'rb') as f:
+            with open(temp_path, 'ab') as f:
+                f.flush()
                 os.fsync(f.fileno())
 
             # Atomic rename to final destination

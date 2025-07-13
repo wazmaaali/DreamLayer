@@ -69,7 +69,7 @@ def mock_comfyui_models_dir(temp_model_dir):
     models_dir = os.path.join(temp_model_dir, 'ComfyUI', 'models')
     
     # Create model type directories
-    model_types = ['checkpoints', 'loras', 'controlnet', 'upscale_models', 'vae', 'embeddings']
+    model_types = ['checkpoints', 'loras', 'controlnet', 'upscale_models', 'vae', 'embeddings', 'hypernetworks']
     for model_type in model_types:
         os.makedirs(os.path.join(models_dir, model_type), exist_ok=True)
     

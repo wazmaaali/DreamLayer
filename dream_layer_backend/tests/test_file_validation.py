@@ -5,7 +5,6 @@ Tests the core extension validation implemented in shared_utils.py
 
 import pytest
 from pathlib import Path
-from unittest.mock import patch, Mock
 import sys
 import os
 
@@ -64,19 +63,17 @@ class TestFileExtensionValidation:
         file_ext = Path(filename).suffix.lower()
         assert file_ext not in expected_extensions
     
-    def test_case_insensitive_validation(self, expected_extensions):
+    @pytest.mark.parametrize("filename", [
+        "model.SAFETENSORS",
+        "model.CkPt",
+        "model.PTH",
+        "model.PT",
+        "model.BIN"
+    ])
+    def test_case_insensitive_validation(self, filename, expected_extensions):
         """Test that extension validation is case insensitive"""
-        test_cases = [
-            "model.SAFETENSORS",
-            "model.CkPt", 
-            "model.PTH",
-            "model.PT",
-            "model.BIN"
-        ]
-        
-        for filename in test_cases:
-            file_ext = Path(filename).suffix.lower()
-            assert file_ext in expected_extensions, f"Failed for {filename}"
+        file_ext = Path(filename).suffix.lower()
+        assert file_ext in expected_extensions, f"Failed for {filename}"
     
     def test_all_expected_extensions_covered(self, sample_model_files, expected_extensions):
         """Test that all expected extensions are covered in our test cases"""
@@ -87,11 +84,8 @@ class TestFileExtensionValidation:
             sample_model_files['valid_pt'],
             sample_model_files['valid_bin']
         ]
-        
-        tested_extensions = set()
-        for filename in valid_files:
-            tested_extensions.add(Path(filename).suffix.lower())
-        
+
+        tested_extensions = {Path(filename).suffix.lower() for filename in valid_files}
         assert tested_extensions == expected_extensions
 
 
@@ -112,8 +106,7 @@ class TestFileValidationIntegration:
         error_message = f"Invalid file type. Supported formats: {', '.join(sorted(expected_extensions))}"
         
         # Verify all extensions are included
-        for ext in expected_extensions:
-            assert ext in error_message
+        assert all(ext in error_message for ext in expected_extensions)
     
     @pytest.mark.parametrize("filename,should_pass", [
         ("model.safetensors", True),
@@ -156,7 +149,13 @@ class TestValidationEdgeCases:
         filename = "path/to/model.safetensors"
         file_ext = Path(filename).suffix.lower()
         assert file_ext in expected_extensions
-    
+
+    def test_filename_with_windows_path(self, expected_extensions):
+        """Test filename that includes Windows-style path components"""
+        filename = "path\\to\\model.safetensors"
+        file_ext = Path(filename).suffix.lower()
+        assert file_ext in expected_extensions
+
     def test_very_long_extension(self, expected_extensions):
         """Test very long extension"""
         filename = "model.verylongextension"

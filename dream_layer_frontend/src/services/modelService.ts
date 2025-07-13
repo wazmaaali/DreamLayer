@@ -6,7 +6,7 @@ export interface CheckpointModel {
 
 export const fetchAvailableModels = async (): Promise<CheckpointModel[]> => {
   try {
-    const response = await fetch('http://localhost:5002/api/models');
+    const response = await fetch(`${API_BASE_URL}/api/models`);
     if (!response.ok) {
       throw new Error('Failed to fetch models');
     }
@@ -33,7 +33,7 @@ export interface RandomPromptResponse {
 export const fetchRandomPrompt = async (type: 'positive' | 'negative'): Promise<string> => {
   try {
     console.log(`🔄 Frontend: Calling fetch-prompt API with type: ${type}`);
-    const response = await fetch(`http://localhost:5002/api/fetch-prompt?type=${type}`);
+    const response = await fetch(`${API_BASE_URL}/api/fetch-prompt?type=${type}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch ${type} prompt: ${response.statusText}`);
@@ -54,21 +54,45 @@ export const fetchRandomPrompt = async (type: 'positive' | 'negative'): Promise<
 };
 
 export const fetchUpscalerModels = async () => {
-  const response = await fetch('http://localhost:5002/api/upscaler-models');
-  const data = await response.json();
-  return data.models;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/upscaler-models`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch upscaler models');
+    }
+    const data = await response.json();
+    return data.models || [];
+  } catch (error) {
+    console.error('Error fetching upscaler models:', error);
+    throw error;
+  }
 };
 
 export const fetchLoraModels = async () => {
-  const response = await fetch('http://localhost:5002/api/lora-models');
-  const data = await response.json();
-  return data.models;
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/lora-models`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch LoRA models');
+    }
+    const data = await response.json();
+    return data.models || [];
+  } catch (error) {
+    console.error('Error fetching LoRA models:', error);
+    throw error;
+  }
 };
 
 export const fetchControlNetModels = async () => {
-  const response = await fetch('http://localhost:5001/api/controlnet/models');
-  const data = await response.json();
-  return data.models;
+  try {
+    const response = await fetch(`${CONTROLNET_API_BASE_URL}/api/controlnet/models`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch ControlNet models');
+    }
+    const data = await response.json();
+    return data.models || [];
+  } catch (error) {
+    console.error('Error fetching ControlNet models:', error);
+    throw error;
+  }
 };
 
 // Interface for model info across all types
@@ -176,7 +200,9 @@ let wsConnection: WebSocket | null = null;
 let wsReconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY = 2000; // 2 seconds
-const WS_URL = 'ws://localhost:8188/ws';
+const WS_URL = process.env.COMFY_UI_WS_API_URL || 'ws://localhost:8188/ws';
+const API_BASE_URL = process.env.BACKEND_API_BASE_URL || 'http://localhost:5002';
+const CONTROLNET_API_BASE_URL = process.env.TXT_TO_IMG_API_BASE_URL || 'http://localhost:5001';
 
 // Generate a unique client ID for this session
 const generateClientId = (): string => {

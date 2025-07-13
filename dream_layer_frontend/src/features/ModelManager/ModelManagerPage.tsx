@@ -121,13 +121,11 @@ const ModelManagerPage = () => {
     loadModels();
     ensureWebSocketConnection();
 
-    const unsubscribe = addModelRefreshListener(() => {
+    return addModelRefreshListener(() => {
       console.log('📡 ModelManager: Received model refresh event, reloading models...');
       loadModels();
       toast.success('Models refreshed automatically!');
     });
-
-    return unsubscribe;
   }, []);
 
   const handleModelUploaded = (uploadedModel: UploadedModel) => {

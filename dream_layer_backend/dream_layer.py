@@ -83,7 +83,8 @@ if os.environ.get('DREAMLAYER_COMFYUI_CPU_MODE', 'false').lower() == 'true':
     sys.argv.append('--cpu')
 
 # Allow WebSocket connections from frontend
-sys.argv.extend(['--enable-cors-header', 'http://localhost:8080'])
+cors_origin = os.environ.get('COMFYUI_CORS_ORIGIN', 'http://localhost:8080')
+sys.argv.extend(['--enable-cors-header', cors_origin])
 
 # Only add ComfyUI to path if it exists and we need to start the server
 def import_comfyui_main():
@@ -125,6 +126,7 @@ def get_available_models():
     """
     Fetch available checkpoint models from ComfyUI and append closed-source models
     """
+    from shared_utils import get_model_display_name
     formatted_models = []
     
     # Get ComfyUI models
@@ -134,7 +136,6 @@ def get_available_models():
             models = response.json()
             # Convert filenames to more user-friendly names (using display name mapping when available)
             for filename in models:
-                from shared_utils import get_model_display_name
                 name = get_model_display_name(filename)
                 formatted_models.append({
                     "id": filename,
@@ -279,6 +280,7 @@ def get_available_lora_models():
     """
     Fetch available LoRA models from ComfyUI
     """
+    from shared_utils import get_model_display_name
     formatted_models = []
     
     try:
@@ -286,7 +288,6 @@ def get_available_lora_models():
         
         # Convert filenames to more user-friendly names (using display name mapping when available)
         for filename in models:
-            from shared_utils import get_model_display_name
             name = get_model_display_name(filename)
             formatted_models.append({
                 "id": filename,

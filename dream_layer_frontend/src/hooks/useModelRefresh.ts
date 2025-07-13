@@ -23,14 +23,11 @@ export const useModelRefresh = (
     ensureWebSocketConnection();
 
     // Subscribe to model refresh events with optional model type filtering
-    const unsubscribe = addModelRefreshListener(() => {
+    return addModelRefreshListener(() => {
       const logPrefix = modelType ? `📡 ${modelType}` : '📡 Models';
       console.log(`${logPrefix}: Received WebSocket refresh event, reloading...`);
       fetchFunction();
     }, modelType);
-
-    // Cleanup subscription on unmount
-    return unsubscribe;
   }, [fetchFunction, modelType, enabled]);
 };
 
