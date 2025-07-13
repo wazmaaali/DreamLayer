@@ -5,11 +5,10 @@ Tests the security measures implemented in shared_utils.py
 
 import os
 from pathlib import Path
-import sys
 import pytest
 
-# Add parent directory to path to import shared_utils
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import shared_utils from parent directory
+from shared_utils import upload_model_file
 
 
 class TestPathTraversalProtection:

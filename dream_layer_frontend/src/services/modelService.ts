@@ -128,7 +128,7 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
 
     // Process LoRAs
     if (loras.status === 'fulfilled') {
-      loras.value.forEach((model: any) => {
+      loras.value.forEach((model: ModelInfo) => {
         allModels.push({
           id: model.id || model.filename,
           name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
@@ -154,7 +154,7 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
 
     // Process Upscaler models
     if (upscalers.status === 'fulfilled') {
-      upscalers.value.forEach((model: any) => {
+      upscalers.value.forEach((model: ModelInfo) => {
         allModels.push({
           id: model.id || model.filename,
           name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
