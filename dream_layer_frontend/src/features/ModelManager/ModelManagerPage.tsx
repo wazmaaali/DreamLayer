@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -34,12 +34,9 @@ import {
   fetchAllModelTypes,
   addModelRefreshListener,
   ensureWebSocketConnection,
-  UnifiedModelInfo
+  ModelInfo
 } from '@/services/modelService';
 import { toast } from "@/components/ui/sonner";
-
-// Use the unified model interface from the service
-type ModelInfo = UnifiedModelInfo;
 
 const ModelManagerPage = () => {
   const [models, setModels] = useState<ModelInfo[]>([]);
@@ -59,7 +56,7 @@ const ModelManagerPage = () => {
     { value: 'loras', label: 'Style Add-ons (LoRAs)', description: 'Modifies art style or subjects' },
     { value: 'vae', label: 'Image Enhancer (VAE)', description: 'Improves colors and quality' },
     { value: 'controlnet', label: 'Guided Generation (ControlNet)', description: 'Controls image composition' },
-    { value: 'upscale_models', label: 'Upscaler', description: 'Makes images larger and sharper' },
+    { value: 'upscale_models', label: 'Resolution Enhancer (Upscalers)', description: 'Makes images larger and sharper' },
     { value: 'embeddings', label: 'Text Concepts (Embeddings)', description: 'Adds new words/concepts' },
     { value: 'hypernetworks', label: 'Style Modifiers (Hypernetworks)', description: 'Advanced style control' }
   ];
@@ -67,14 +64,7 @@ const ModelManagerPage = () => {
   const loadModels = async () => {
     try {
       setIsLoading(true);
-      console.log('🔄 ModelManager: Loading all model types...');
-
-      // Fetch all model types using the new unified function
       const allModels = await fetchAllModelTypes();
-
-      console.log('📊 ModelManager: Loaded models:', allModels.length, 'total models');
-      console.log('📊 ModelManager: Model types:', [...new Set(allModels.map(m => m.type))]);
-
       setModels(allModels);
     } catch (error) {
       console.error('Error loading models:', error);
@@ -90,7 +80,7 @@ const ModelManagerPage = () => {
 
     // Filter by search query
     if (searchQuery) {
-      filtered = filtered.filter(model => 
+      filtered = filtered.filter(model =>
         model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         model.filename.toLowerCase().includes(searchQuery.toLowerCase())
       );
@@ -104,7 +94,7 @@ const ModelManagerPage = () => {
     // Sort models
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       switch (sortBy) {
         case 'name':
           comparison = a.name.localeCompare(b.name);
@@ -119,7 +109,7 @@ const ModelManagerPage = () => {
           comparison = getModelTypePriority(a.type) - getModelTypePriority(b.type);
           break;
       }
-      
+
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
@@ -130,7 +120,7 @@ const ModelManagerPage = () => {
   useEffect(() => {
     loadModels();
     ensureWebSocketConnection();
-    
+
     const unsubscribe = addModelRefreshListener(() => {
       console.log('📡 ModelManager: Received model refresh event, reloading models...');
       loadModels();
@@ -161,8 +151,6 @@ const ModelManagerPage = () => {
 
     toast.success(`${uploadedModel.originalFilename} uploaded successfully!`);
   };
-
-
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -382,8 +370,8 @@ const ModelManagerPage = () => {
             )}
           </Card>
         ) : (
-          <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" 
+          <div className={viewMode === 'grid'
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
             : "space-y-2"
           }>
             {filteredModels.map((model) => (
@@ -405,7 +393,6 @@ const ModelManagerPage = () => {
   );
 };
 
-// Separate ModelCard component to keep the main component clean
 interface ModelCardProps {
   model: ModelInfo;
   viewMode: 'grid' | 'list';

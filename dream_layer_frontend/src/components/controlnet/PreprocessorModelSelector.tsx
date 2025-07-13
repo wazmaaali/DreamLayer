@@ -32,14 +32,12 @@ const PreprocessorModelSelector: React.FC<PreprocessorModelSelectorProps> = ({
 
   const fetchModels = useCallback(async () => {
     try {
-      console.log('🔄 PreprocessorModelSelector: fetchModels called');
       setIsLoading(true);
       const response = await fetch('http://localhost:5001/api/controlnet/models');
       if (response.ok) {
         const data = await response.json();
         if (data.status === 'success') {
           setModels(data.models);
-          console.log('📊 PreprocessorModelSelector: Fetched ControlNet models:', data.models.length, 'models');
         } else {
           console.error('Failed to fetch models:', data.message);
         }

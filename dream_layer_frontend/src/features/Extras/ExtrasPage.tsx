@@ -52,10 +52,8 @@ const ExtrasPage = () => {
   };
 
   const loadUpscalerModels = useCallback(async () => {
-    console.log('🔄 ExtrasPage: loadUpscalerModels called');
     try {
       const models = await fetchUpscalerModels();
-      console.log('📊 ExtrasPage: Fetched upscaler models:', models.length, 'models');
       setAvailableUpscalers(models);
     } catch (error) {
       console.error('Error fetching upscaler models:', error);

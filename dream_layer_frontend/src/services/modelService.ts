@@ -71,8 +71,8 @@ export const fetchControlNetModels = async () => {
   return data.models;
 };
 
-// Interface for unified model info across all types
-export interface UnifiedModelInfo {
+// Interface for model info across all types
+export interface ModelInfo {
   id: string;
   name: string;
   filename: string;
@@ -82,7 +82,7 @@ export interface UnifiedModelInfo {
   path?: string;
 }
 
-export const fetchAllModelTypes = async (): Promise<UnifiedModelInfo[]> => {
+export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
   try {
     const [checkpoints, loras, controlnets, upscalers] = await Promise.allSettled([
       fetchAvailableModels(),
@@ -91,7 +91,7 @@ export const fetchAllModelTypes = async (): Promise<UnifiedModelInfo[]> => {
       fetchUpscalerModels()
     ]);
 
-    const allModels: UnifiedModelInfo[] = [];
+    const allModels: ModelInfo[] = [];
 
     // Process checkpoints
     if (checkpoints.status === 'fulfilled') {
@@ -241,16 +241,7 @@ const connectWebSocket = (): Promise<WebSocket> => {
 
           // Listen for our custom "models-refresh" events
           if (message.type === 'models-refresh') {
-            console.log('📡 Received model refresh event:', message.data);
-            console.log('📡 Event model_type:', message.data?.model_type);
-            console.log('📡 Event filename:', message.data?.filename);
-            console.log('📡 Event action:', message.data?.action);
             notifyModelRefreshListeners(message.data);
-          }
-
-          // Also log other message types for debugging
-          if (message.type !== 'status' && message.type !== 'executing') {
-            console.log('📨 WebSocket message:', message.type, message.data);
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);

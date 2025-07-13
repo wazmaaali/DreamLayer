@@ -15,7 +15,6 @@ const LoraBrowser = () => {
   const [loraModels, setLoraModels] = useState<LoraModel[]>([]);
 
   const fetchLoraModels = useCallback(async () => {
-    console.log('🔄 LoraBrowser: fetchLoraModels called');
     setIsLoading(true);
     setError(null);
     try {
@@ -34,7 +33,6 @@ const LoraBrowser = () => {
           tags: model.tags || [],
           defaultWeight: model.defaultWeight || 1.0
         }));
-        console.log('📊 LoraBrowser: Fetched LoRA models:', modelsWithDefaults.length, 'models');
         setLoraModels(modelsWithDefaults);
       } else {
         throw new Error(data.message || 'Failed to fetch LoRA models');

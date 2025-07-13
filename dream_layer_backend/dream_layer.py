@@ -82,8 +82,7 @@ if os.environ.get('DREAMLAYER_COMFYUI_CPU_MODE', 'false').lower() == 'true':
     print("Forcing ComfyUI to run in CPU mode as requested.")
     sys.argv.append('--cpu')
 
-# Add specific CORS origin for WebSocket connections from frontend
-print("Allowing WebSocket connections from frontend (localhost:8080)...")
+# Allow WebSocket connections from frontend
 sys.argv.extend(['--enable-cors-header', 'http://localhost:8080'])
 
 # Only add ComfyUI to path if it exists and we need to start the server
@@ -133,9 +132,8 @@ def get_available_models():
         response = requests.get(f"{COMFY_API_URL}/models/checkpoints")
         if response.status_code == 200:
             models = response.json()
-            # Convert filenames to more user-friendly names using display name mapping
+            # Convert filenames to more user-friendly names (using display name mapping when available)
             for filename in models:
-                # Import here to avoid circular import
                 from shared_utils import get_model_display_name
                 name = get_model_display_name(filename)
                 formatted_models.append({
@@ -286,9 +284,8 @@ def get_available_lora_models():
     try:
         models = get_lora_models()
         
-        # Convert filenames to more user-friendly names using display name mapping
+        # Convert filenames to more user-friendly names (using display name mapping when available)
         for filename in models:
-            # Import here to avoid circular import
             from shared_utils import get_model_display_name
             name = get_model_display_name(filename)
             formatted_models.append({
@@ -464,12 +461,8 @@ def upload_model():
     Supports types: checkpoints, loras, controlnet, upscale_models, vae, embeddings, hypernetworks
     """
     try:
-        # Import here to avoid circular import
         from shared_utils import upload_model_file
 
-        print("🤖 Model upload endpoint called")
-
-        # Check if file is present in request
         if 'file' not in request.files:
             return jsonify({
                 "status": "error",
@@ -477,18 +470,11 @@ def upload_model():
             }), 400
 
         file = request.files['file']
-
-        # Get model type from form data (default to checkpoints)
         model_type = request.form.get('model_type', 'checkpoints')
 
-        print(f"📁 Upload request - File: {file.filename}, Type: {model_type}")
-
-        # Call the upload function from shared_utils
         result = upload_model_file(file, model_type)
 
-        # Handle tuple response (result, status_code)
         if not isinstance(result, tuple):
-            # Success case
             return jsonify(result)
 
         response_data, status_code = result

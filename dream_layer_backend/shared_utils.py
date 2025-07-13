@@ -17,6 +17,7 @@ SERVED_IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'se
 # Model display name mapping file
 MODEL_DISPLAY_NAMES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model_display_names.json')
 
+# Display names are user-friendly names for models, stored in a JSON file
 def load_model_display_names() -> Dict[str, str]:
     """Load the mapping of actual filenames to display names"""
     try:

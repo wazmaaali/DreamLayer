@@ -66,7 +66,6 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
       try {
         await ensureWebSocketConnection();
         setIsWebSocketConnected(true);
-        console.log('✅ ModelSelector: WebSocket connection established');
       } catch (error) {
         console.warn('⚠️ ModelSelector: Failed to establish WebSocket connection:', error);
         setIsWebSocketConnected(false);
@@ -157,7 +156,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
         {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
         {models.length === 0 && !isLoading && !error && (
           <p className="text-sm text-muted-foreground mt-1">
-            No models found. Try uploading a .safetensors model file.
+            No models found. Try uploading a new model file.
           </p>
         )}
       </div>

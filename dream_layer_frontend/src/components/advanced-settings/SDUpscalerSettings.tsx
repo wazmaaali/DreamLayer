@@ -12,10 +12,8 @@ const SDUpscalerSettings = () => {
   const [models, setModels] = useState([]);
 
   const loadUpscalerModels = useCallback(async () => {
-    console.log('🔄 SDUpscalerSettings: loadUpscalerModels called');
     try {
       const models = await fetchUpscalerModels();
-      console.log('📊 SDUpscalerSettings: Fetched upscaler models:', models.length, 'models');
       setModels(models);
     } catch (error) {
       console.error('Error fetching upscaler models:', error);

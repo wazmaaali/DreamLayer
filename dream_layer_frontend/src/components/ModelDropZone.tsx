@@ -92,7 +92,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
   };
 
   const handleFileUpload = async (file: File) => {
-    // 🔒 RACE CONDITION PREVENTION: Block if already uploading
+    // Race condition prevention: block if already uploading
     if (isUploading) {
       console.log('Upload already in progress, ignoring new upload request');
       return;
@@ -274,7 +274,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
         </div>
       )}
 
-      {/* Upload Area - Always Visible */}
+      {/* Upload Area */}
       <div
           className={`
             relative p-8 border-2 border-dashed rounded-lg text-center transition-all duration-200
