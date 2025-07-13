@@ -196,7 +196,7 @@ const CONTROLNET_API_BASE_URL = import.meta.env.VITE_TXT_TO_IMG_API_BASE_URL || 
 
 // Generate a unique client ID for this session
 const generateClientId = (): string => {
-  return 'dreamlayer_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+  return 'dreamlayer_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
 };
 
 // Model refresh listeners with optional model type filtering
