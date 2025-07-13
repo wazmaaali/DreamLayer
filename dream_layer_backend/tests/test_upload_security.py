@@ -89,18 +89,17 @@ class TestModelDirectoryResolution:
         assert model_type in model_path
         assert filename in model_path
     
-    def test_path_stays_within_models_directory(self, mock_comfyui_models_dir):
+    @pytest.mark.parametrize("model_type", ['checkpoints', 'loras', 'controlnet'])
+    def test_path_stays_within_models_directory(self, mock_comfyui_models_dir, model_type):
         """Test that resolved paths stay within the models directory"""
-        model_types = ['checkpoints', 'loras', 'controlnet']
         filename = "test_model.safetensors"
-        
-        for model_type in model_types:
-            model_path = os.path.join(mock_comfyui_models_dir, model_type, filename)
-            # Path should start with the models directory
-            assert model_path.startswith(mock_comfyui_models_dir)
-            # Should not escape the models directory
-            relative_path = os.path.relpath(model_path, mock_comfyui_models_dir)
-            assert not relative_path.startswith('..')
+
+        model_path = os.path.join(mock_comfyui_models_dir, model_type, filename)
+        # Path should start with the models directory
+        assert model_path.startswith(mock_comfyui_models_dir)
+        # Should not escape the models directory
+        relative_path = os.path.relpath(model_path, mock_comfyui_models_dir)
+        assert not relative_path.startswith('..')
 
 
 class TestFileUploadSecurity:
@@ -184,45 +183,37 @@ class TestSecurityEdgeCases:
             # This documents the actual behavior of Path.name
             assert safe_filename == "passwd", "Path.name strips path components including null bytes"
     
-    def test_unicode_normalization(self):
+    @pytest.mark.parametrize("filename", [
+        "modél.safetensors",  # Accented characters
+        "模型.safetensors",    # Chinese characters
+        "мodel.safetensors",   # Cyrillic characters
+        "model️.safetensors"   # Emoji
+    ])
+    def test_unicode_normalization(self, filename):
         """Test handling of unicode characters in filenames"""
-        unicode_filenames = [
-            "modél.safetensors",  # Accented characters
-            "模型.safetensors",    # Chinese characters
-            "мodel.safetensors",   # Cyrillic characters
-            "model️.safetensors"   # Emoji
-        ]
-        
-        for filename in unicode_filenames:
-            # Should handle unicode filenames gracefully
-            safe_filename = Path(filename).name
-            assert safe_filename == filename  # Should preserve unicode
-            assert safe_filename.endswith('.safetensors')
+        # Should handle unicode filenames gracefully
+        safe_filename = Path(filename).name
+        assert safe_filename == filename  # Should preserve unicode
+        assert safe_filename.endswith('.safetensors')
     
     def test_very_long_filename(self):
         """Test handling of very long filenames"""
-        # Create a very long filename
+        # Create a very long filename (200 chars + extension = 213 total, under 255 limit)
         long_name = "a" * 200 + ".safetensors"
-        
+
         safe_filename = Path(long_name).name
         assert safe_filename == long_name
         assert safe_filename.endswith('.safetensors')
-        
-        # Test filesystem limits (most filesystems have 255 char limit)
-        if len(safe_filename) > 255:
-            # Should be truncated or handled appropriately
-            # This is filesystem dependent
-            pass
+        # Verify length is reasonable for most filesystems
+        assert len(safe_filename) < 255
     
-    def test_special_characters_in_filename(self):
+    @pytest.mark.parametrize("special_char", ['<', '>', ':', '"', '|', '?', '*'])
+    def test_special_characters_in_filename(self, special_char):
         """Test handling of special characters in filenames"""
-        special_chars = ['<', '>', ':', '"', '|', '?', '*']
-        
-        for char in special_chars:
-            filename = f"model{char}test.safetensors"
-            safe_filename = Path(filename).name
-            
-            # Different operating systems handle special chars differently
-            # The important thing is that it doesn't cause security issues
-            assert isinstance(safe_filename, str)
-            assert safe_filename.endswith('.safetensors')
+        filename = f"model{special_char}test.safetensors"
+        safe_filename = Path(filename).name
+
+        # Different operating systems handle special chars differently
+        # The important thing is that it doesn't cause security issues
+        assert isinstance(safe_filename, str)
+        assert safe_filename.endswith('.safetensors')

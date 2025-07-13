@@ -319,18 +319,17 @@ export const closeModelRefreshWebSocket = (): void => {
   modelRefreshListeners.clear();
 };
 
-// Auto-setup WebSocket when this module is imported
-// This ensures the connection is established early
-let autoSetupPromise: Promise<void> | null = null;
+// singleton to ensure we only have one connection promise at a time
+let webSocketConnectionPromise: Promise<void> | null = null;
 
 export const ensureWebSocketConnection = (): Promise<void> => {
-  if (!autoSetupPromise) {
-    autoSetupPromise = setupModelRefreshWebSocket().catch(error => {
-      console.warn('Failed to auto-setup WebSocket connection:', error);
-      autoSetupPromise = null; // Reset so it can be retried
+  if (!webSocketConnectionPromise) {
+    webSocketConnectionPromise = setupModelRefreshWebSocket().catch(error => {
+      console.warn('Failed to setup WebSocket connection:', error);
+      webSocketConnectionPromise = null; // Reset so it can be retried
       throw error;
     });
   }
 
-  return autoSetupPromise;
+  return webSocketConnectionPromise;
 };
