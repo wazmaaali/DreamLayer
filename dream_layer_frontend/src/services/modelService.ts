@@ -59,6 +59,105 @@ export const fetchUpscalerModels = async () => {
   return data.models;
 };
 
+export const fetchLoraModels = async () => {
+  const response = await fetch('http://localhost:5002/api/lora-models');
+  const data = await response.json();
+  return data.models;
+};
+
+export const fetchControlNetModels = async () => {
+  const response = await fetch('http://localhost:5001/api/controlnet/models');
+  const data = await response.json();
+  return data.models;
+};
+
+// Interface for unified model info across all types
+export interface UnifiedModelInfo {
+  id: string;
+  name: string;
+  filename: string;
+  type: string;
+  size?: number;
+  dateAdded?: string;
+  path?: string;
+}
+
+export const fetchAllModelTypes = async (): Promise<UnifiedModelInfo[]> => {
+  try {
+    const [checkpoints, loras, controlnets, upscalers] = await Promise.allSettled([
+      fetchAvailableModels(),
+      fetchLoraModels(),
+      fetchControlNetModels(),
+      fetchUpscalerModels()
+    ]);
+
+    const allModels: UnifiedModelInfo[] = [];
+
+    // Process checkpoints
+    if (checkpoints.status === 'fulfilled') {
+      checkpoints.value.forEach((model: CheckpointModel) => {
+        allModels.push({
+          ...model,
+          type: 'checkpoints',
+          size: Math.floor(Math.random() * 5000000000), // Mock size for now
+          dateAdded: new Date().toISOString(),
+          path: `/models/checkpoints/${model.filename}`
+        });
+      });
+    }
+
+    // Process LoRAs
+    if (loras.status === 'fulfilled') {
+      loras.value.forEach((model: any) => {
+        allModels.push({
+          id: model.id || model.filename,
+          name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
+          filename: model.filename,
+          type: 'loras',
+          size: Math.floor(Math.random() * 500000000), // Mock size for now
+          dateAdded: new Date().toISOString(),
+          path: `/models/loras/${model.filename}`
+        });
+      });
+    }
+
+    // Process ControlNet models
+    if (controlnets.status === 'fulfilled') {
+      controlnets.value.forEach((filename: string) => {
+        allModels.push({
+          id: filename,
+          name: filename.replace(/\.[^/.]+$/, ""),
+          filename: filename,
+          type: 'controlnet',
+          size: Math.floor(Math.random() * 2000000000), // Mock size for now
+          dateAdded: new Date().toISOString(),
+          path: `/models/controlnet/${filename}`
+        });
+      });
+    }
+
+    // Process Upscaler models
+    if (upscalers.status === 'fulfilled') {
+      upscalers.value.forEach((model: any) => {
+        allModels.push({
+          id: model.id || model.filename,
+          name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
+          filename: model.filename,
+          type: 'upscale_models',
+          size: Math.floor(Math.random() * 1000000000), // Mock size for now
+          dateAdded: new Date().toISOString(),
+          path: `/models/upscale_models/${model.filename}`
+        });
+      });
+    }
+
+    return allModels;
+  } catch (error) {
+    console.error('Error fetching all model types:', error);
+    throw error;
+  }
+};
+
 // WebSocket Model Refresh Listener Types
 export interface ModelRefreshEvent {
   model_type: string;

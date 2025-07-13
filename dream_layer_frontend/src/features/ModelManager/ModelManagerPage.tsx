@@ -30,20 +30,16 @@ import {
   Settings
 } from "lucide-react";
 import ModelDropZone, { ModelType, UploadedModel } from '@/components/ModelDropZone';
-import { 
-  fetchAvailableModels, 
-  addModelRefreshListener, 
+import {
+  fetchAllModelTypes,
+  addModelRefreshListener,
   ensureWebSocketConnection,
-  CheckpointModel 
+  UnifiedModelInfo
 } from '@/services/modelService';
 import { toast } from "@/components/ui/sonner";
 
-interface ModelInfo extends CheckpointModel {
-  type: ModelType;
-  size?: number;
-  dateAdded?: string;
-  path?: string;
-}
+// Use the unified model interface from the service
+type ModelInfo = UnifiedModelInfo;
 
 const ModelManagerPage = () => {
   const [models, setModels] = useState<ModelInfo[]>([]);
@@ -71,20 +67,15 @@ const ModelManagerPage = () => {
   const loadModels = async () => {
     try {
       setIsLoading(true);
-      // For now, we'll use the existing fetchAvailableModels and simulate other types
-      // In a real implementation, you'd have separate endpoints for each model type
-      const checkpointModels = await fetchAvailableModels();
-      
-      // Transform to ModelInfo format and add deterministic mock data for demonstration
-      const modelInfos: ModelInfo[] = checkpointModels.map((model, index) => ({
-        ...model,
-        type: 'checkpoints' as ModelType,
-        size: Math.floor((index + 1) * 1234567890), // Deterministic size based on index
-        dateAdded: new Date(Date.now() - (index * 24 * 60 * 60 * 1000)).toISOString(), // Deterministic dates
-        path: `/models/checkpoints/${model.filename}`
-      }));
+      console.log('🔄 ModelManager: Loading all model types...');
 
-      setModels(modelInfos);
+      // Fetch all model types using the new unified function
+      const allModels = await fetchAllModelTypes();
+
+      console.log('📊 ModelManager: Loaded models:', allModels.length, 'total models');
+      console.log('📊 ModelManager: Model types:', [...new Set(allModels.map(m => m.type))]);
+
+      setModels(allModels);
     } catch (error) {
       console.error('Error loading models:', error);
       toast.error('Failed to load models');
@@ -167,6 +158,8 @@ const ModelManagerPage = () => {
       const exists = prev.some(m => m.filename === newModel.filename);
       return exists ? prev : [newModel, ...prev];
     });
+
+    toast.success(`${uploadedModel.originalFilename} uploaded successfully!`);
   };
 
 
