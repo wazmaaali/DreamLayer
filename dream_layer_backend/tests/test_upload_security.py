@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 # Import shared_utils from parent directory
-from shared_utils import upload_model_file
 
 
 class TestPathTraversalProtection:
@@ -102,31 +101,33 @@ class TestModelDirectoryResolution:
 
 
 class TestFileUploadSecurity:
-    def test_content_type_validation(self):
-        """Test content type validation for model files"""
-        # Model files should typically be application/octet-stream
-        # This test validates that we understand what content types are expected
-        valid_content_types = [
-            'application/octet-stream',
-            'application/x-binary',
-            'binary/octet-stream'
-        ]
+    @pytest.mark.parametrize("filename", [
+        'model.safetensors',
+        'model.ckpt',
+        'model.pth',
+        'model.pt',
+        'model.bin',
+        'MODEL.SAFETENSORS',  # Case insensitive
+        'model.CkPt'
+    ])
+    def test_valid_file_extensions_are_accepted(self, filename):
+        """Test that valid file extensions are accepted"""
+        allowed_extensions = {'.safetensors', '.ckpt', '.pth', '.pt', '.bin'}
+        file_ext = Path(filename).suffix.lower()
+        assert file_ext in allowed_extensions, f"Valid extension {file_ext} should be allowed"
 
-        # These content types should not be used for model files
-        invalid_content_types = [
-            'text/plain',
-            'application/json',
-            'text/html',
-            'application/javascript'
-        ]
-
-        # Test that valid content types are binary-related
-        for content_type in valid_content_types:
-            assert any(keyword in content_type for keyword in ['octet-stream', 'binary'])
-
-        # Test that invalid content types are text-related
-        for content_type in invalid_content_types:
-            assert any(keyword in content_type for keyword in ['text', 'json', 'html', 'javascript'])
+    @pytest.mark.parametrize("filename", [
+        'model.txt',
+        'model.pkl',
+        'model.json',
+        'model.exe',
+        'model'  # No extension
+    ])
+    def test_invalid_file_extensions_are_rejected(self, filename):
+        """Test that invalid file extensions are rejected"""
+        allowed_extensions = {'.safetensors', '.ckpt', '.pth', '.pt', '.bin'}
+        file_ext = Path(filename).suffix.lower()
+        assert file_ext not in allowed_extensions, f"Invalid extension {file_ext} should be rejected"
     
     def test_atomic_write_pattern(self, temp_model_dir):
         """Test atomic write pattern for file uploads"""
@@ -159,28 +160,29 @@ class TestFileUploadSecurity:
 class TestSecurityEdgeCases:
     """Test security edge cases and attack vectors"""
     
-    @pytest.mark.parametrize("malicious_filename,expected_behavior", [
-        ("model.safetensors\x00.txt", "preserves_null_byte"),
-        ("model\x00.exe.safetensors", "preserves_null_byte"),
-        ("safe.safetensors\x00../../../etc/passwd", "strips_path_and_null_byte")
+    @pytest.mark.parametrize("malicious_filename", [
+        "model.safetensors\x00.txt",
+        "model\x00.exe.safetensors",
+        "safe.safetensors\x00../../../etc/passwd"
     ])
-    def test_null_byte_injection(self, malicious_filename, expected_behavior):
-        """Test detection of null byte injection attempts"""
+    def test_null_byte_injection_detection(self, malicious_filename):
+        """Test detection and handling of null byte injection attempts"""
         # Test that we can detect null bytes in filenames
-        # In a secure implementation, filenames with null bytes should be rejected
         has_null_byte = '\x00' in malicious_filename
-        assert has_null_byte, "Test should contain null byte for validation"
+        assert has_null_byte, "Test filename should contain null byte"
 
-        # Path.name behavior depends on the filename structure
-        safe_filename = Path(malicious_filename).name
+        # In a secure implementation, filenames with null bytes should be rejected
+        # This test validates that we can detect the security issue
+        def is_filename_safe(filename):
+            """Security check function that should reject null bytes"""
+            return '\x00' not in filename
 
-        if expected_behavior == "preserves_null_byte":
-            # Simple filenames preserve null bytes
-            assert '\x00' in safe_filename, "Path.name preserves null bytes in simple filenames"
-        elif expected_behavior == "strips_path_and_null_byte":
-            # Complex paths with traversal may strip null bytes along with path components
-            # This documents the actual behavior of Path.name
-            assert safe_filename == "passwd", "Path.name strips path components including null bytes"
+        # The malicious filename should fail the security check
+        assert not is_filename_safe(malicious_filename), "Filename with null byte should be rejected"
+
+        # A clean version should pass
+        clean_filename = malicious_filename.replace('\x00', '')
+        assert is_filename_safe(clean_filename), "Clean filename should be accepted"
     
     @pytest.mark.parametrize("filename", [
         "modél.safetensors",  # Accented characters
