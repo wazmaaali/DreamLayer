@@ -45,7 +45,7 @@ const ModelManagerPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModelType, setSelectedModelType] = useState<ModelType | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'size' | 'type'>('type');
+  const [sortBy, setSortBy] = useState<'name' | 'type'>('type');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showUploadZone, setShowUploadZone] = useState(true);
 
@@ -76,7 +76,7 @@ const ModelManagerPage = () => {
 
   // Filter and sort models
   useEffect(() => {
-    let filtered = models;
+    let filtered = [...models]; // Create a copy to avoid mutating original array
 
     // Filter by search query
     if (searchQuery) {
@@ -99,15 +99,11 @@ const ModelManagerPage = () => {
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
-        case 'date':
-          comparison = new Date(a.dateAdded || 0).getTime() - new Date(b.dateAdded || 0).getTime();
-          break;
-        case 'size':
-          comparison = (a.size || 0) - (b.size || 0);
-          break;
         case 'type':
           comparison = getModelTypePriority(a.type) - getModelTypePriority(b.type);
           break;
+        default:
+          comparison = 0;
       }
 
       return sortOrder === 'asc' ? comparison : -comparison;
@@ -150,17 +146,7 @@ const ModelManagerPage = () => {
     toast.success(`${uploadedModel.originalFilename} uploaded successfully!`);
   };
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString();
-  };
 
   const getModelTypeColor = (type: ModelType): string => {
     const colors = {
@@ -287,14 +273,12 @@ const ModelManagerPage = () => {
             {/* Sort */}
             <div className="flex items-center space-x-2">
               <Label htmlFor="sort" className="text-sm">Sort:</Label>
-              <Select value={sortBy} onValueChange={(value: 'name' | 'date' | 'size' | 'type') => setSortBy(value)}>
+              <Select value={sortBy} onValueChange={(value: 'name' | 'type') => setSortBy(value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="size">Size</SelectItem>
                   <SelectItem value="type">Type</SelectItem>
                 </SelectContent>
               </Select>
@@ -337,11 +321,7 @@ const ModelManagerPage = () => {
           <p className="text-sm text-muted-foreground">
             Showing {filteredModels.length} of {models.length} models
           </p>
-          {models.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Total size: {formatFileSize(models.reduce((acc, model) => acc + (model.size || 0), 0))}
-            </p>
-          )}
+
         </div>
 
         {/* Models Grid/List */}
@@ -380,8 +360,6 @@ const ModelManagerPage = () => {
                 getModelTypeColor={getModelTypeColor}
                 getModelTypeIcon={getModelTypeIcon}
                 getModelTypeLabel={getModelTypeLabel}
-                formatFileSize={formatFileSize}
-                formatDate={formatDate}
               />
             ))}
           </div>
@@ -397,8 +375,6 @@ interface ModelCardProps {
   getModelTypeColor: (type: ModelType) => string;
   getModelTypeIcon: (type: ModelType) => React.ReactNode;
   getModelTypeLabel: (type: ModelType) => string;
-  formatFileSize: (bytes: number) => string;
-  formatDate: (dateString: string) => string;
 }
 
 const ModelCard: React.FC<ModelCardProps> = ({
@@ -406,9 +382,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
   viewMode,
   getModelTypeColor,
   getModelTypeIcon,
-  getModelTypeLabel,
-  formatFileSize,
-  formatDate
+  getModelTypeLabel
 }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -426,7 +400,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
           tabIndex={0}
           onKeyDown={handleKeyDown}
           role="button"
-          aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}, Size: ${formatFileSize(model.size || 0)}`}
+          aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}`}
         >
           <div className="flex items-center space-x-4 flex-1 min-w-0">
             <div className="flex-shrink-0">
@@ -441,8 +415,6 @@ const ModelCard: React.FC<ModelCardProps> = ({
                 {getModelTypeIcon(model.type)}
                 <span className="ml-1">{getModelTypeLabel(model.type)}</span>
               </Badge>
-              <span>{formatFileSize(model.size || 0)}</span>
-              <span>{formatDate(model.dateAdded || '')}</span>
             </div>
           </div>
         </div>
@@ -456,7 +428,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
       tabIndex={0}
       onKeyDown={handleKeyDown}
       role="button"
-      aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}, Size: ${formatFileSize(model.size || 0)}`}
+      aria-label={`Model: ${model.name}, Type: ${getModelTypeLabel(model.type)}`}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
@@ -474,16 +446,7 @@ const ModelCard: React.FC<ModelCardProps> = ({
             {model.filename}
           </p>
         </div>
-        <div className="space-y-1 text-sm text-muted-foreground">
-          <div className="flex justify-between">
-            <span>Size:</span>
-            <span>{formatFileSize(model.size || 0)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Added:</span>
-            <span>{formatDate(model.dateAdded || '')}</span>
-          </div>
-        </div>
+
       </div>
     </Card>
   );

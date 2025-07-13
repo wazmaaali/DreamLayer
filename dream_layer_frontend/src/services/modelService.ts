@@ -101,8 +101,6 @@ export interface ModelInfo {
   name: string;
   filename: string;
   type: string;
-  size?: number;
-  dateAdded?: string;
   path?: string;
 }
 
@@ -123,8 +121,6 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
         allModels.push({
           ...model,
           type: 'checkpoints',
-          size: Math.floor(Math.random() * 5000000000), // Mock size for now
-          dateAdded: new Date().toISOString(),
           path: `/models/checkpoints/${model.filename}`
         });
       });
@@ -138,8 +134,6 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
           name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
           filename: model.filename,
           type: 'loras',
-          size: Math.floor(Math.random() * 500000000), // Mock size for now
-          dateAdded: new Date().toISOString(),
           path: `/models/loras/${model.filename}`
         });
       });
@@ -153,8 +147,6 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
           name: filename.replace(/\.[^/.]+$/, ""),
           filename: filename,
           type: 'controlnet',
-          size: Math.floor(Math.random() * 2000000000), // Mock size for now
-          dateAdded: new Date().toISOString(),
           path: `/models/controlnet/${filename}`
         });
       });
@@ -168,8 +160,6 @@ export const fetchAllModelTypes = async (): Promise<ModelInfo[]> => {
           name: model.name || model.filename.replace(/\.[^/.]+$/, ""),
           filename: model.filename,
           type: 'upscale_models',
-          size: Math.floor(Math.random() * 1000000000), // Mock size for now
-          dateAdded: new Date().toISOString(),
           path: `/models/upscale_models/${model.filename}`
         });
       });
