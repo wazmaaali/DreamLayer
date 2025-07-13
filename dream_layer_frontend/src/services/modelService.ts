@@ -200,9 +200,9 @@ let wsConnection: WebSocket | null = null;
 let wsReconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY = 2000; // 2 seconds
-const WS_URL = process.env.COMFY_UI_WS_API_URL || 'ws://localhost:8188/ws';
-const API_BASE_URL = process.env.BACKEND_API_BASE_URL || 'http://localhost:5002';
-const CONTROLNET_API_BASE_URL = process.env.TXT_TO_IMG_API_BASE_URL || 'http://localhost:5001';
+const WS_URL = import.meta.env.VITE_COMFY_UI_WS_API_URL || 'ws://localhost:8188/ws';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL || 'http://localhost:5002';
+const CONTROLNET_API_BASE_URL = import.meta.env.VITE_TXT_TO_IMG_API_BASE_URL || 'http://localhost:5001';
 
 // Generate a unique client ID for this session
 const generateClientId = (): string => {

@@ -66,7 +66,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
     formData.append('file', file);
     formData.append('model_type', selectedModelType);
 
-    const apiBaseUrl = process.env.BACKEND_API_BASE_URL || 'http://localhost:5002';
+    const apiBaseUrl = import.meta.env.VITE_BACKEND_API_BASE_URL || 'http://localhost:5002';
     const response = await fetch(`${apiBaseUrl}/api/upload-model`, {
       method: 'POST',
       body: formData,
