@@ -3,6 +3,7 @@ import shutil
 import time
 import requests
 import copy
+import json
 from typing import List, Dict, Any
 from pathlib import Path
 from dream_layer import get_directories
@@ -12,6 +13,43 @@ from dream_layer_backend_utils.shared_workflow_parameters import increment_seed_
 # Global constants
 COMFY_API_URL = "http://127.0.0.1:8188"
 SERVED_IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'served_images')
+
+# Model display name mapping file
+MODEL_DISPLAY_NAMES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model_display_names.json')
+
+def load_model_display_names() -> Dict[str, str]:
+    """Load the mapping of actual filenames to display names"""
+    try:
+        if os.path.exists(MODEL_DISPLAY_NAMES_FILE):
+            with open(MODEL_DISPLAY_NAMES_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load model display names: {e}")
+    return {}
+
+def save_model_display_names(mapping: Dict[str, str]) -> None:
+    """Save the mapping of actual filenames to display names"""
+    try:
+        with open(MODEL_DISPLAY_NAMES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(mapping, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"Warning: Could not save model display names: {e}")
+
+def add_model_display_name(filename: str, display_name: str) -> None:
+    """Add a new filename -> display name mapping"""
+    mapping = load_model_display_names()
+    mapping[filename] = display_name
+    save_model_display_names(mapping)
+
+def get_model_display_name(filename: str) -> str:
+    """Get the display name for a filename, fallback to processed filename"""
+    mapping = load_model_display_names()
+    if filename in mapping:
+        return mapping[filename]
+
+    # Fallback: process the filename to create a display name
+    name = Path(filename).stem.replace('-', ' ').replace('_', ' ')
+    return ' '.join(word.capitalize() for word in name.split())
 
 # Sampler name mapping from frontend to ComfyUI
 SAMPLER_NAME_MAP = {
@@ -365,10 +403,14 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
         os.makedirs(target_dir, exist_ok=True)
         print(f"📁 Target directory: {target_dir}")
 
-        # Generate safe filename with timestamp
+        # Generate safe filename with timestamp for storage
         timestamp = int(time.time() * 1000)
         safe_filename = f"{Path(file.filename).stem}_{timestamp}{file_ext}"
         target_path = Path(target_dir) / safe_filename
+
+        # Create display name from original filename (without timestamp)
+        original_display_name = Path(file.filename).stem.replace('-', ' ').replace('_', ' ')
+        original_display_name = ' '.join(word.capitalize() for word in original_display_name.split())
 
         # 🔒 SECURITY: Final path validation
         final_target_path = target_path.resolve()
@@ -409,6 +451,10 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
             print(f"✅ Successfully saved model: {safe_filename}")
             print(f"📏 File size: {file_size} bytes")
 
+            # 💾 DISPLAY NAME: Save the display name mapping
+            add_model_display_name(safe_filename, original_display_name)
+            print(f"📝 Display name mapping saved: {safe_filename} -> {original_display_name}")
+
             # 🔄 WEBSOCKET: Emit model refresh event
             try:
                 emit_model_refresh(model_type, safe_filename)
@@ -421,6 +467,7 @@ def upload_model_file(file, model_type: str = "checkpoints") -> Dict[str, Any]:
                 "status": "success",
                 "filename": safe_filename,
                 "original_filename": file.filename,
+                "display_name": original_display_name,
                 "model_type": model_type,
                 "filepath": str(target_path),
                 "size": file_size,

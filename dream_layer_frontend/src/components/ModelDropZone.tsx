@@ -13,6 +13,7 @@ export type ModelType = 'checkpoints' | 'loras' | 'controlnet' | 'upscale_models
 export interface UploadedModel {
   filename: string;
   originalFilename: string;
+  displayName?: string;
   modelType: ModelType;
   filepath: string;
   size: number;
@@ -83,6 +84,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
     return {
       filename: result.filename,
       originalFilename: result.original_filename,
+      displayName: result.display_name,
       modelType: result.model_type,
       filepath: result.filepath,
       size: result.size

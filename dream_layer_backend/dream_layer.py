@@ -133,10 +133,11 @@ def get_available_models():
         response = requests.get(f"{COMFY_API_URL}/models/checkpoints")
         if response.status_code == 200:
             models = response.json()
-            # Convert filenames to more user-friendly names
+            # Convert filenames to more user-friendly names using display name mapping
             for filename in models:
-                name = filename.split('.')[0].replace('-', ' ').replace('_', ' ')
-                name = ' '.join(word.capitalize() for word in name.split())
+                # Import here to avoid circular import
+                from shared_utils import get_model_display_name
+                name = get_model_display_name(filename)
                 formatted_models.append({
                     "id": filename,
                     "name": name,
@@ -285,10 +286,11 @@ def get_available_lora_models():
     try:
         models = get_lora_models()
         
-        # Convert filenames to more user-friendly names
+        # Convert filenames to more user-friendly names using display name mapping
         for filename in models:
-            name = filename.split('.')[0].replace('-', ' ').replace('_', ' ')
-            name = ' '.join(word.capitalize() for word in name.split())
+            # Import here to avoid circular import
+            from shared_utils import get_model_display_name
+            name = get_model_display_name(filename)
             formatted_models.append({
                 "id": filename,
                 "name": name,
