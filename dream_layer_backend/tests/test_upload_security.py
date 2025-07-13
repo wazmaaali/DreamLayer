@@ -120,26 +120,6 @@ class TestModelDirectoryResolution:
 
 
 class TestFileUploadSecurity:
-    """Test file upload security measures"""
-    
-    def test_file_size_considerations(self):
-        """Test file size validation considerations"""
-        # Test that we can handle large file sizes (8GB limit mentioned in docs)
-        max_size = 8 * 1024 * 1024 * 1024  # 8GB in bytes
-        
-        # Test various file sizes
-        test_sizes = [
-            1024,  # 1KB
-            1024 * 1024,  # 1MB  
-            1024 * 1024 * 1024,  # 1GB
-            max_size,  # 8GB (max allowed)
-        ]
-        
-        for size in test_sizes:
-            # All should be within acceptable range
-            assert size <= max_size
-            assert size > 0
-    
     def test_content_type_validation(self):
         """Test content type validation"""
         # Model files should typically be application/octet-stream

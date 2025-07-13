@@ -57,12 +57,6 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
       return `Invalid file type. Only ${acceptedTypes.join(', ')} files are supported.`;
     }
 
-    // Check file size (8GB limit as per backend)
-    const maxSize = 8 * 1024 * 1024 * 1024; // 8GB in bytes
-    if (file.size > maxSize) {
-      return 'File size exceeds 8GB limit.';
-    }
-
     return null;
   };
 
@@ -314,7 +308,7 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
                     or <span className="text-primary font-medium">browse files</span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Supports: {acceptedTypes.join(', ')} • Max size: <span className="font-semibold">8GB</span>
+                    Supports: {acceptedTypes.join(', ')}
                   </p>
                 </div>
                 <Button variant="secondary" size="sm" className="mt-4">
