@@ -309,10 +309,10 @@ def discover_models(models_dir: str, model_type: str):
         return []
     
     model_extensions = {
-        'checkpoint': ['.safetensors', '.ckpt', '.pth', '.pt', '.bin'],
-        'lora': ['.safetensors', '.ckpt', '.pth', '.pt', '.bin'],
-        'controlnet': ['.safetensors', '.ckpt', '.pth', '.pt', '.bin'],
-        'upscaler': ['.safetensors', '.ckpt', '.pth', '.pt', '.bin']
+        'checkpoint': ['.safetensors', '.ckpt'],
+        'lora': ['.safetensors', '.pt'],
+        'controlnet': ['.safetensors', '.pth'],
+        'upscaler': ['.pth', '.bin']
     }
     
     extensions = model_extensions.get(model_type, [])
