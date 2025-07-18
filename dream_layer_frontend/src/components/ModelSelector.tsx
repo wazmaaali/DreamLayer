@@ -29,7 +29,6 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false)
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
 
   const loadModels = useCallback(async (showSuccessToast = false) => {
     try {
@@ -37,7 +36,6 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
       setError(null);
       const availableModels = await fetchAvailableModels();
       setModels(availableModels);
-      setLastRefreshTime(new Date());
 
       // If we have models and no selection, select the first one
       if (availableModels.length > 0 && !selectedModel) {
@@ -98,22 +96,6 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
     loadModels();
   };
 
-  const formatLastRefreshTime = (date: Date | null): string => {
-    if (!date) return '';
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSeconds = Math.floor(diffMs / 1000);
-    const diffMinutes = Math.floor(diffSeconds / 60);
-
-    if (diffSeconds < 60) {
-      return `Updated ${diffSeconds}s ago`;
-    } else if (diffMinutes < 60) {
-      return `Updated ${diffMinutes}m ago`;
-    } else {
-      return `Updated at ${date.toLocaleTimeString()}`;
-    }
-  };
-
     return (
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
             <div className="flex flex-col flex-1">
@@ -133,15 +115,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
                                 <WifiOff className="h-3 w-3 text-gray-400" title="Auto-refresh disabled" />
                             )}
                             <span className="text-xs text-muted-foreground">
-                {isWebSocketConnected ? 'Auto' : 'Manual'}
-              </span>
+                                {isWebSocketConnected ? 'Auto' : 'Manual'}
+                            </span>
                         </div>
-                        {/* Last Refresh Time */}
-                        {lastRefreshTime && (
-                            <span className="text-xs text-muted-foreground">
-                {formatLastRefreshTime(lastRefreshTime)}
-              </span>
-                        )}
                     </div>
                 </div>
                 <Select value={selectedModel} onValueChange={handleModelChange}>
