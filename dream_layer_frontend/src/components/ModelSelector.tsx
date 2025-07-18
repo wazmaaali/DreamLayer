@@ -141,11 +141,11 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelSelect }) => {
         <Select value={selectedModel} onValueChange={handleModelChange}>
           <SelectTrigger
             id="model"
-            className="w-full bg-white dark:bg-[#0F172A] text-foreground dark:text-white border-input dark:border-slate-700"
+            className="w-full"
           >
             <SelectValue placeholder="Select a model" />
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-[#0F172A] border-input dark:border-slate-700">
+          <SelectContent>
             {models.map((model) => (
               <SelectItem key={model.id} value={model.filename}>
                 {model.name}

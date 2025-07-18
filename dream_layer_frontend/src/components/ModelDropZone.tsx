@@ -221,13 +221,13 @@ const ModelDropZone: React.FC<ModelDropZoneProps> = ({
           onValueChange={(value: ModelType) => setSelectedModelType(value)}
           disabled={isUploading}
         >
-          <SelectTrigger 
+          <SelectTrigger
             id="model-type"
-            className="w-full bg-white dark:bg-[#0F172A] text-foreground dark:text-white border-input dark:border-slate-700"
+            className="w-full"
           >
             <SelectValue placeholder="Select model type" />
           </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-[#0F172A] border-input dark:border-slate-700">
+          <SelectContent>
             {modelTypeOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 <div className="flex flex-col">
