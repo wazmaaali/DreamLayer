@@ -12,6 +12,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+IS_CI="${CI:-false}"
+
 # Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -81,7 +83,7 @@ start_python_server() {
     
     # Start the server in background
     cd dream_layer_backend
-    python "$server_file" > "../$log_file" 2>&1 &
+    python3 "$server_file" > "../$log_file" 2>&1 &
     local pid=$!
     cd ..
     
@@ -145,9 +147,15 @@ main() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     cd "$SCRIPT_DIR"
     
+    if [[ "$(uname)" == "Linux" && -f "/tmp/dlvenv/bin/activate" ]]; then
+        print_status "Activating Python virtual environment..."
+        # shellcheck disable=SC1091
+        source "/tmp/dlvenv/bin/activate"
+    fi
+
     # Check if Python is available
-    if ! command -v python &> /dev/null; then
-        print_error "Python is not installed or not in PATH"
+    if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
+        print_error "Python (or python3) is not installed or not in PATH"
         exit 1
     fi
     
@@ -184,13 +192,18 @@ main() {
     
     # Wait for ports to be freed
     sleep 2
-    
+
     # Start Python servers
     print_status "Starting Python servers..."
     
+    # Tell ComfyUI to use only CPU mode if we are in a container
+    if [[ "$IS_CI" == "true" ]]; then
+        export DREAMLAYER_COMFYUI_CPU_MODE=true
+    fi
+
     # Start dream_layer.py (main server) - needs longer timeout as it starts ComfyUI first
     start_python_server "dream_layer" "dream_layer.py" 5002 120
-    
+
     # Start txt2img_server.py
     start_python_server "txt2img_server" "txt2img_server.py" 5001
     
@@ -240,9 +253,14 @@ main() {
     print_status "Log files are available in the 'logs' directory"
     print_status "Press Ctrl+C to stop all services"
     
-    # Keep the script running
-    wait
+    if [[ "$IS_CI" == "true" ]]; then
+        print_success "CI mode: skipping wait, services launched"
+        echo "[CI-SUCCESS] Dream Layer started successfully in CI mode"
+    else
+    # Keep the script running interactively
+        wait
+    fi
 }
 
 # Run main function
-main "$@" 
+main "$@"
