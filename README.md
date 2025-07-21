@@ -35,6 +35,11 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 
 ### Installation
 
+**linux:**
+```bash
+./install_linux_dependencies.sh
+```
+
 **macOS:**
 ```bash
 ./install_mac_dependencies.sh
@@ -46,6 +51,11 @@ install_windows_dependencies.ps1
 ```
 
 ### Start Application
+
+**linux:**
+```bash
+./start_dream_layer.sh
+```
 
 **macOS:**
 ```bash
