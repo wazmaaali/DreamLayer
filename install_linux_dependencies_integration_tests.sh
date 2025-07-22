@@ -5,7 +5,7 @@ ALL_DISTROS=( "ubuntu:24.04" "debian:stable" "fedora:latest" "archlinux" )
 LOGDIR="test-logs"
 PROJECT_DIR="$(pwd)"
 INSTALL_SCRIPT="install_linux_dependencies.sh"
-START_SCRIPT="start_dream_layer.sh"
+START_SCRIPT="start_dream_layer_linux.sh"
 
 # Function to show usage
 usage() {

@@ -17,6 +17,8 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 IS_CI="${CI:-false}"
+# Set venv path from environment variable or default
+DLVENV_PATH="${DLVENV_PATH:-/tmp/dlvenv}"
 
 # Function to print colored output
 print_header() {
@@ -160,9 +162,19 @@ install_nodejs() {
         exit 1
     fi
 
-    # Ensure 'node' points to 'nodejs' if needed
+   # Ensure 'node' points to 'nodejs' if needed
     if ! command -v node >/dev/null && command -v nodejs >/dev/null; then
-        sudo ln -s "$(command -v nodejs)" /usr/local/bin/node
+        NODEJS_PATH="$(command -v nodejs)"
+        TARGET_LINK="/usr/local/bin/node"
+
+        if [ -w "$(dirname "$TARGET_LINK")" ]; then
+            ln -s "$NODEJS_PATH" "$TARGET_LINK" 2>/dev/null || {
+                echo "[ERROR] Failed to create symlink $TARGET_LINK → $NODEJS_PATH"
+            }
+        else
+            echo "[WARNING] Cannot create symlink: no write permission to $(dirname "$TARGET_LINK")"
+            echo "          Try running with elevated permissions or install 'node' manually."
+        fi
     fi
 
     if ! command_exists node || ! command_exists npm; then
@@ -244,12 +256,12 @@ install_python_dependencies() {
     local SCRIPT_DIR
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     cd "$SCRIPT_DIR"
-    
+
     # Ensure we're in the venv (should be activated from install_python)
-    if [[ "$VIRTUAL_ENV" != "/tmp/dlvenv" ]]; then
+    if [[ "$VIRTUAL_ENV" != "$DLVENV_PATH" ]]; then
         print_step "Activating virtual environment..."
         # shellcheck disable=SC1090
-        source "/tmp/dlvenv/bin/activate"
+        source "$DLVENV_PATH/bin/activate"
     fi
     
     # Install backend dependencies
@@ -265,6 +277,10 @@ install_python_dependencies() {
     if [ -f "ComfyUI/requirements.txt" ]; then
         print_step "Installing ComfyUI dependencies..."
         python3 -m pip install -r ComfyUI/requirements.txt
+        
+        # Install missing dependency for custom nodes
+        pip install lpips
+        
         print_success "ComfyUI dependencies installed"
     else
         print_warning "ComfyUI/requirements.txt not found"
@@ -350,9 +366,9 @@ run_tests() {
     print_step "Running post-installation tests..."
     
     # Activate venv for tests
-    if [[ "$VIRTUAL_ENV" != "/tmp/dlvenv" ]]; then
+        if [[ "$VIRTUAL_ENV" != "$DLVENV_PATH" ]]; then
         # shellcheck disable=SC1090
-        source "/tmp/dlvenv/bin/activate"
+        source "$DLVENV_PATH/bin/activate"
     fi
     
     # Test Python

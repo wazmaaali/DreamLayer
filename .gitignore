@@ -204,3 +204,7 @@ dream_layer_backend/served_images/
  
 #VSCode
 .vscode/
+
+# DreamLayer logs and test logs
+logs
+test-logs
