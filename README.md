@@ -35,6 +35,11 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 
 ### Installation
 
+**linux:**
+```bash
+./install_linux_dependencies.sh
+```
+
 **macOS:**
 ```bash
 ./install_mac_dependencies.sh
@@ -47,6 +52,11 @@ install_windows_dependencies.ps1
 
 ### Start Application
 
+**linux:**
+```bash
+./start_dream_layer.sh
+```
+
 **macOS:**
 ```bash
 ./start_dream_layer.sh
@@ -56,6 +66,12 @@ install_windows_dependencies.ps1
 ```bash
 start_dream_layer.bat
 ```
+### Env Variables
+**install_dependencies_linux**
+DLVENV_PATH // preferred path to python virtual env. default is /tmp/dlvenv
+
+**start_dream_layer**
+DREAMLAYER_COMFYUI_CPU_MODE // if no nvidia drivers available run using CPU only.  default is false
 
 ### Access
 

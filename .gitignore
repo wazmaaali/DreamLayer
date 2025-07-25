@@ -207,3 +207,7 @@ model_display_names.json
  
 #VSCode
 .vscode/
+
+# DreamLayer logs and test logs
+logs
+test-logs
