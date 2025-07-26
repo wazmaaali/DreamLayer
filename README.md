@@ -33,6 +33,25 @@ No node graph on screen, no server rental, just a lightning-fast local interface
 
 ## Quick Start
 
+### ⭐️ Run with Cursor (Smooth Setup with a Few Clicks)
+
+Easiest way to run DreamLayer 😃 Best for non-technical users
+
+1. **Download this repo**
+2. **Open the folder in [Cursor](https://www.cursor.so/)** (an AI-native code editor)
+3. Type `run it` or press the **"Run"** button — then follow the guided steps
+
+Cursor will:
+- Walk you through each setup step
+- Install Python and Node dependencies
+- Create a virtual environment
+- Start the backend and frontend
+- Output a **localhost:8080** link you can open in your browser
+
+⏱️ Takes about 5-10 minutes. No terminal needed. Just click, run, and you’re in. 🚀
+
+> On macOS, PyTorch setup may take a few retries. Just keep pressing **Run** when prompted. Cursor will guide you through it.
+
 ### Installation
 
 **linux:**
