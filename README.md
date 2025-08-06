@@ -15,8 +15,6 @@
 <p align="center">
   <b>Product Vision:</b>
   <a href="https://huggingface.co/blog/ytmack7/benchmarking-diffusion-models">AI Research</a>
-  &nbsp;|&nbsp;
-  <a href="https://huggingface.co/blog/ytmack7/stable-diffusion-ui-for-creatives">AI Art</a>
 </p>
 
 
