@@ -2,7 +2,12 @@ import pytest
 from unittest import mock
 from io import BytesIO
 from PIL import Image
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../custom_nodes')))
 from runway_text2img import RunwayText2Image
+
+
 
 @pytest.fixture
 def dummy_image_bytes():
